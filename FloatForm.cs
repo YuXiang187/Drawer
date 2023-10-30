@@ -6,10 +6,10 @@ namespace Drawer
 {
     internal class FloatForm : Form
     {
-        private readonly ContextMenuStrip contextMenu;
-        private bool isDragging = false;
         private Point offset;
+        private bool isDragging = false;
         private readonly MainTray mainTray;
+        private readonly ContextMenuStrip contextMenu;
         public FloatForm(MainTray mainTray)
         {
             this.mainTray = mainTray;
@@ -20,7 +20,7 @@ namespace Drawer
             ControlBox = false;
             Load += FloatForm_Load;
             FormBorderStyle = FormBorderStyle.None;
-            Paint += FloatForm_Paint;
+            TransparencyKey = SystemColors.Control;
             FormClosing += FloatForm_FormClosing;
             ShowInTaskbar = false;
             MouseMove += FloatForm_MouseMove;
@@ -43,6 +43,17 @@ namespace Drawer
 
         }
 
+        // set do not appear in Alt+Tab list
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x80;
+                return cp;
+            }
+        }
+
         private void Item_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
@@ -59,17 +70,6 @@ namespace Drawer
             }
         }
 
-        // set do not appear in Alt+Tab list
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x80;
-                return cp;
-            }
-        }
-
         private void FloatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             MainTray.hotKeyItem.Enabled = true;
@@ -78,15 +78,10 @@ namespace Drawer
             Hide();
         }
 
-        private void FloatForm_Paint(object sender, PaintEventArgs e)
-        {
-            ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Color.DarkGray, ButtonBorderStyle.Solid);
-        }
-
         private void FloatForm_Load(object sender, EventArgs e)
         {
             BackgroundImage = Properties.Resources.run;
-            BackgroundImageLayout = ImageLayout.Zoom;
+            BackgroundImageLayout = ImageLayout.Center;
         }
 
         private void FloatForm_MouseClick(object sender, MouseEventArgs e)

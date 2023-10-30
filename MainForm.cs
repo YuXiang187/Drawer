@@ -9,8 +9,8 @@ namespace Drawer
 {
     internal class MainForm : Form
     {
-        public static bool isHotKey = false;
         public bool isRun = false;
+        public static bool isHotKey = false;
 
         private readonly StringPool pool;
         private readonly MainTray mainTray;
@@ -66,6 +66,17 @@ namespace Drawer
             Controls.Add(progressBar);
         }
 
+        // set do not appear in Alt+Tab list
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x80;
+                return cp;
+            }
+        }
+
         public async void Run()
         {
             if (isRun == false)
@@ -76,7 +87,7 @@ namespace Drawer
                 mainLabel.ForeColor = Color.Gray;
                 mainTray.notifyIcon.Icon = Properties.Resources.tray_stop;
                 mainTray.FloatFormIcon(false);
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 8; i++)
                 {
                     mainLabel.Text = pool.Get();
                     await Task.Delay(60);
@@ -105,18 +116,7 @@ namespace Drawer
                 {
                     Hide();
                 }
-                await Task.Delay(12);
-            }
-        }
-
-        // set do not appear in Alt+Tab list
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x80;
-                return cp;
+                await Task.Delay(16);
             }
         }
 
@@ -133,11 +133,16 @@ namespace Drawer
         // set background image
         private void MainForm_Load(object sender, EventArgs e)
         {
-            string imagePath = System.IO.Path.Combine(Application.StartupPath, "background.png");
-            if (System.IO.File.Exists(imagePath))
+            string[] imageExtensions = { "png", "jpg", "jpeg", "bmp" };
+            foreach (string extension in imageExtensions)
             {
-                BackgroundImage = Image.FromFile(imagePath);
-                BackgroundImageLayout = ImageLayout.Zoom;
+                string imagePath = System.IO.Path.Combine(Application.StartupPath, $"background.{extension}");
+                if (System.IO.File.Exists(imagePath))
+                {
+                    BackgroundImage = Image.FromFile(imagePath);
+                    BackgroundImageLayout = ImageLayout.Zoom;
+                    break;
+                }
             }
         }
 

@@ -8,9 +8,9 @@ namespace Drawer
 {
     internal class StringPool
     {
+        private List<string> pool;
         private readonly EncryptString es;
         private readonly List<string> initPool;
-        private List<string> pool;
         private readonly Random random;
 
         public StringPool()
@@ -71,7 +71,6 @@ namespace Drawer
             }
         }
 
-        // save encrypted text to pool.txt
         public void Save()
         {
             string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pool.txt");
