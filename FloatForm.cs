@@ -81,7 +81,7 @@ namespace Drawer
         private void FloatForm_Load(object sender, EventArgs e)
         {
             BackgroundImage = Properties.Resources.run;
-            BackgroundImageLayout = ImageLayout.Center;
+            BackgroundImageLayout = ImageLayout.Zoom;
         }
 
         private void FloatForm_MouseClick(object sender, MouseEventArgs e)
