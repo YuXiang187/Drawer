@@ -4,7 +4,7 @@
 
 在程序根目录下必须要有`list.es`文件才能启动此程序。此文件为**加密**文件，请使用[CipherPad](https://github.com/YuXiang187/CipherPad)编辑。
 
-如需使用2.5以下的版本，请前往[Drawer-Java](https://github.com/YuXiang187/Drawer-Java)。
+如需使用2.5以下的版本，请前往[Drawer-Java](https://github.com/YuXiang187/Drawer-Java)库。
 
 `list.es`文件语法为：
 
@@ -32,9 +32,21 @@
 
 ---
 
+本软件支持设置背景图片。最小的图片大小为450x250（比例9:5）。
+
+背景图片的名称为以下的任意一种：
+
+* background.jpg
+* background.jpeg
+* background.png
+* background.bmp
+
+---
+
 **3.0版本更新日志**（最新）：
 
 * 程序改用C#语言编写
+* 主窗体支持添加背景图片
 
 **2.5版本更新日志**：
 
