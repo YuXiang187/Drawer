@@ -116,7 +116,7 @@ namespace Drawer
                 {
                     Hide();
                 }
-                await Task.Delay(16);
+                await Task.Delay(14);
             }
         }
 

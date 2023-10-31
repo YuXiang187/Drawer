@@ -20,7 +20,7 @@ namespace Drawer
             ControlBox = false;
             Load += FloatForm_Load;
             FormBorderStyle = FormBorderStyle.None;
-            TransparencyKey = SystemColors.Control;
+            Paint += FloatForm_Paint;
             FormClosing += FloatForm_FormClosing;
             ShowInTaskbar = false;
             MouseMove += FloatForm_MouseMove;
@@ -52,6 +52,11 @@ namespace Drawer
                 cp.ExStyle |= 0x80;
                 return cp;
             }
+        }
+
+        private void FloatForm_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Color.DarkGray, ButtonBorderStyle.Solid);
         }
 
         private void Item_Click(object sender, EventArgs e)
