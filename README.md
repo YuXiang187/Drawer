@@ -2,11 +2,11 @@
 
 一个简易的名称抽取程序。
 
-在程序根目录下必须要有`list.es`文件才能启动此程序。此文件为**加密**文件，请使用[CipherPad](https://github.com/YuXiang187/CipherPad)编辑。
+在程序根目录下必须要有`list.txt`文件才能启动此程序。此文件为**加密**文件，请使用[CipherPad](https://github.com/YuXiang187/CipherPad)编辑。
 
 如需使用2.5以下的版本，请前往[Drawer-Java](https://github.com/YuXiang187/Drawer-Java)库。
 
-`list.es`文件语法为：
+`list.txt`文件语法为：
 
 ```
 名称1,名称2,名称3,名称4,名称5,...
@@ -16,7 +16,7 @@
 
 ---
 
-程序会根据`list.es`文件提供的名称进行随机抽取。
+程序会根据`list.txt`文件提供的名称进行随机抽取。
 
 程序首次启动时默认开启热键<kbd>Ctrl</kbd>，你可以通过系统托盘菜单来选择是否开启该热键。
 
@@ -47,6 +47,7 @@
 
 * 程序改用C#语言编写
 * 主窗体支持添加背景图片
+* 存储名称的文件后缀名更改为`.txt`
 
 **2.5版本更新日志**：
 
