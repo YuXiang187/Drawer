@@ -19,7 +19,7 @@ namespace Drawer
             random = new Random();
             initPool = new List<string>(Read("list.txt").Split(','));
 
-            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pool.txt")))
+            if (File.Exists(Path.Combine(Application.StartupPath, "pool.txt")))
             {
                 pool = new List<string>(Read("pool.txt").Split(','));
             }
@@ -54,7 +54,7 @@ namespace Drawer
 
         public string Read(string fileName)
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+            string filePath = Path.Combine(Application.StartupPath, fileName);
             if (File.Exists(filePath))
             {
                 using (StreamReader reader = new StreamReader(filePath))
@@ -73,7 +73,7 @@ namespace Drawer
 
         public void Save()
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pool.txt");
+            string filePath = Path.Combine(Application.StartupPath, "pool.txt");
             File.WriteAllText(filePath, es.Encrypt(string.Join(",", pool)));
         }
     }

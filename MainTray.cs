@@ -19,9 +19,9 @@ namespace Drawer
         public static ToolStripMenuItem pauseItem;
         public MainTray()
         {
-            store = new KeyValueStore("Drawer.config");
+            store = new KeyValueStore(Path.Combine(Application.StartupPath, "Drawer.config"));
 
-            if (!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drawer.config")))
+            if (!File.Exists(Path.Combine(Application.StartupPath, "Drawer.config")))
             {
                 store.Add("Mode", "0");
                 store.Add("isAutoLaunch", "false");
@@ -86,7 +86,7 @@ namespace Drawer
         private void IsAutoLaunchItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             if (menuItem.Checked == true)
             {
                 key.SetValue("Drawer", Process.GetCurrentProcess().MainModule.FileName);
