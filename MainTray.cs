@@ -1,8 +1,8 @@
-using Microsoft.Win32;
+using Microsoft.Win32.TaskScheduler;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Security.Principal;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -86,17 +86,27 @@ namespace Drawer
         private void IsAutoLaunchItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            string taskName = "Drawer";
             if (menuItem.Checked == true)
             {
-                key.SetValue("Drawer", Process.GetCurrentProcess().MainModule.FileName);
-                key.Close();
+                using (TaskService taskService = new TaskService())
+                {
+                    TaskDefinition taskDefinition = taskService.NewTask();
+                    _ = taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
+                    _ = taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
+                    taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
+                    taskDefinition.Settings.Compatibility = TaskCompatibility.V2_3;
+                    _ = taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
+                }
                 store.Update("isAutoLaunch", "true");
             }
             else
             {
-                key.DeleteValue("Drawer", false);
-                key.Close();
+                using (TaskService taskService = new TaskService())
+                {
+                    taskService.RootFolder.DeleteTask(taskName, false);
+                }
                 store.Update("isAutoLaunch", "false");
             }
         }
