@@ -58,7 +58,8 @@ namespace Drawer
                         }
                         catch (CryptographicException)
                         {
-                            _ = MessageBox.Show($"文件密钥不匹配，读取失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            _ = MessageBox.Show($"列表文件读取失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Application.Exit();
                             return null;
                         }
                     }
