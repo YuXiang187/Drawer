@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Drawer
 {
@@ -48,9 +49,17 @@ namespace Drawer
                 {
                     using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        try
                         {
-                            return srDecrypt.ReadToEnd();
+                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                return srDecrypt.ReadToEnd();
+                            }
+                        }
+                        catch (CryptographicException)
+                        {
+                            _ = MessageBox.Show($"文件密钥不匹配，读取失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return null;
                         }
                     }
                 }
