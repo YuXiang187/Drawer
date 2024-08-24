@@ -39,7 +39,7 @@ namespace Drawer
             {
                 Reset();
             }
-            return pool[random.Next(0, pool.Count() - 1)];
+            return pool[random.Next(pool.Count())];
         }
 
         public void Reset()
