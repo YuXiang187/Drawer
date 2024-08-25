@@ -8,9 +8,20 @@ namespace Drawer
 {
     internal class EncryptString
     {
-        private readonly string key;
-        public EncryptString(string key)
+        private readonly string pinKey = "cifosrxqj5430986";
+        private string key;
+        private readonly KeyValueStore store;
+        public EncryptString()
         {
+            key = pinKey;
+            store = new KeyValueStore(Path.Combine(Application.StartupPath, "Drawer.config"));
+            string configKey = Decrypt(store.Get("Key"));
+            key = configKey;
+        }
+        public void ChangeKey(string key)
+        {
+            this.key = pinKey;
+            store.Update("Key", Encrypt(key));
             this.key = key;
         }
         public string Encrypt(string text)
@@ -58,8 +69,7 @@ namespace Drawer
                         }
                         catch (CryptographicException)
                         {
-                            _ = MessageBox.Show($"列表文件读取失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            Application.Exit();
+                            _ = MessageBox.Show("列表文件读取失败。\n\n如果单击“确定”按钮后：\n- 程序退出，请再次启动程序。\n- 程序弹出密钥输入窗口，请输入正确的密钥。\n", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return null;
                         }
                     }

@@ -15,13 +15,50 @@ namespace Drawer
 
         public StringPool()
         {
-            es = new EncryptString("yuxiang118712023");
+            es = new EncryptString();
             random = new Random();
+
+            string listString;
+            do
+            {
+                listString = Read("list.txt");
+                if (listString == null)
+                {
+                    string key = InputDialog.Show("YuXiang Drawer", "请输入密钥：", 290);
+                    if (key != null)
+                    {
+                        if (key.Length == 16 || key.Length == 24 || key.Length == 32)
+                        {
+                            es.ChangeKey(key);
+                            if (File.Exists(Path.Combine(Application.StartupPath, "pool.txt")))
+                            {
+                                File.Delete(Path.Combine(Application.StartupPath, "pool.txt"));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                        return;
+                    }
+                }
+            }
+            while (listString == null);
+
             initPool = new List<string>(Read("list.txt").Split(','));
 
             if (File.Exists(Path.Combine(Application.StartupPath, "pool.txt")))
             {
-                pool = new List<string>(Read("pool.txt").Split(','));
+                string poolString = Read("pool.txt");
+                if (poolString != null)
+                {
+                    pool = new List<string>(poolString.Split(','));
+                }
+                else
+                {
+                    File.Delete(Path.Combine(Application.StartupPath, "pool.txt"));
+                    Environment.Exit(0);
+                }
             }
             else
             {
@@ -65,8 +102,6 @@ namespace Drawer
             }
             else
             {
-                _ = MessageBox.Show(fileName + " 文件读取错误，无法启动本软件。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
                 return null;
             }
         }

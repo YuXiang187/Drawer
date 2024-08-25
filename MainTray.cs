@@ -25,6 +25,7 @@ namespace Drawer
             {
                 store.Add("Mode", "0");
                 store.Add("isAutoLaunch", "false");
+                store.Add("Key", "wUNAPZUa+PwcYMPifFTPtcJO3i8UKBPHuaHc3caeLos=");
             }
 
             mainForm = new MainForm(this);
@@ -143,7 +144,7 @@ namespace Drawer
 
         private void AboutItem_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 3.2\n作者 YuXiang187\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _ = MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 3.3\n作者 YuXiang187\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
@@ -170,8 +171,17 @@ namespace Drawer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            _ = new MainTray();
-            Application.Run();
+            if (File.Exists(Path.Combine(Application.StartupPath, "list.txt")))
+            {
+                _ = new MainTray();
+                Application.Run();
+
+            }
+            else
+            {
+                _ = MessageBox.Show("没有找到主列表文件(list.es)，软件启动失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
         }
     }
 }

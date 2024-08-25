@@ -14,7 +14,7 @@ namespace Drawer
 
         public void Add(string key, string value)
         {
-            File.AppendAllText(dataFile, $"{key}={value}\n");
+            File.AppendAllText(dataFile, $"{key}:{value}\n");
         }
 
         public void Remove(string key)
@@ -22,7 +22,7 @@ namespace Drawer
             System.Collections.Generic.List<string> lines = File.ReadAllLines(dataFile).ToList();
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].StartsWith(key + "="))
+                if (lines[i].StartsWith(key + ":"))
                 {
                     lines.RemoveAt(i);
                     break;
@@ -36,9 +36,9 @@ namespace Drawer
             System.Collections.Generic.List<string> lines = File.ReadAllLines(dataFile).ToList();
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].StartsWith(key + "="))
+                if (lines[i].StartsWith(key + ":"))
                 {
-                    lines[i] = $"{key}={value}";
+                    lines[i] = $"{key}:{value}";
                     break;
                 }
             }
@@ -50,7 +50,7 @@ namespace Drawer
             string[] lines = File.ReadAllLines(dataFile);
             foreach (string line in lines)
             {
-                if (line.StartsWith(key + "="))
+                if (line.StartsWith(key + ":"))
                 {
                     return line.Substring(key.Length + 1);
                 }
