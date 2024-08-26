@@ -2,7 +2,9 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Security.Principal;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -63,6 +65,7 @@ namespace Drawer
             _ = contextMenuStrip.Items.Add(pauseItem);
             _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
             _ = contextMenuStrip.Items.Add(isAutoLaunchItem);
+            _ = contextMenuStrip.Items.Add("统计", null, CountItem_Click);
             _ = contextMenuStrip.Items.Add("关于", null, AboutItem_Click);
             _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
             _ = contextMenuStrip.Items.Add("退出", null, ExitItem_Click);
@@ -145,6 +148,20 @@ namespace Drawer
         private void AboutItem_Click(object sender, EventArgs e)
         {
             _ = MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 3.3\n作者 YuXiang187\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void CountItem_Click(object sender, EventArgs e)
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (string item in StringPool.GetInitList())
+            {
+                _ = result.Append(item.ToString() + ", ");
+            }
+            if (result.Length > 0)
+            {
+                result.Length -= 2;
+            }
+            _ = MessageBox.Show("统计结果如下。\n\n抽取数量：" + StringPool.GetInitList().Count() + "\n抽取名单：" + result.ToString(), "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)

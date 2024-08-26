@@ -10,7 +10,7 @@ namespace Drawer
     {
         private List<string> pool;
         private readonly EncryptString es;
-        private readonly List<string> initPool;
+        private static List<string> initPool;
         private readonly Random random;
 
         public StringPool()
@@ -76,6 +76,11 @@ namespace Drawer
             {
                 Reset();
             }
+            foreach (string key in pool)
+            {
+                Console.Write(key + "|");
+            }
+            Console.WriteLine("Count:" + pool.Count());
             return pool[random.Next(pool.Count())];
         }
 
@@ -110,6 +115,11 @@ namespace Drawer
         {
             string filePath = Path.Combine(Application.StartupPath, "pool.txt");
             File.WriteAllText(filePath, es.Encrypt(string.Join(",", pool)));
+        }
+
+        public static List<string> GetInitList()
+        {
+            return initPool;
         }
     }
 }
