@@ -76,11 +76,6 @@ namespace Drawer
             {
                 Reset();
             }
-            foreach (string key in pool)
-            {
-                Console.Write(key + "|");
-            }
-            Console.WriteLine("Count:" + pool.Count());
             return pool[random.Next(pool.Count())];
         }
 
