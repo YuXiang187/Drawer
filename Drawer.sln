@@ -1,31 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.7.34221.43
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawer", "Drawer.csproj", "{2549C64C-B170-41C5-8643-E06EC9911849}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawer", "Drawer.csproj", "{C24B0256-90E2-4873-85FE-32EBAF66051C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Debug|x64.ActiveCfg = Debug|x64
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Debug|x64.Build.0 = Debug|x64
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Release|x64.ActiveCfg = Release|x64
-		{2549C64C-B170-41C5-8643-E06EC9911849}.Release|x64.Build.0 = Release|x64
+		{C24B0256-90E2-4873-85FE-32EBAF66051C}.Debug|x64.ActiveCfg = Debug|x64
+		{C24B0256-90E2-4873-85FE-32EBAF66051C}.Debug|x64.Build.0 = Debug|x64
+		{C24B0256-90E2-4873-85FE-32EBAF66051C}.Release|x64.ActiveCfg = Release|x64
+		{C24B0256-90E2-4873-85FE-32EBAF66051C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AC9F9704-4916-463D-A659-D135110CAEA6}
 	EndGlobalSection
 EndGlobal

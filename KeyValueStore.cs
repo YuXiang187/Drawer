@@ -1,34 +1,16 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Drawer
 {
     internal class KeyValueStore
     {
-        private readonly string dataFile;
-
-        public KeyValueStore(string filePath)
-        {
-            dataFile = filePath;
-        }
+        private readonly string dataFile = Path.Combine(Application.StartupPath, "Drawer.config");
 
         public void Add(string key, string value)
         {
             File.AppendAllText(dataFile, $"{key}:{value}\n");
-        }
-
-        public void Remove(string key)
-        {
-            System.Collections.Generic.List<string> lines = File.ReadAllLines(dataFile).ToList();
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (lines[i].StartsWith(key + ":"))
-                {
-                    lines.RemoveAt(i);
-                    break;
-                }
-            }
-            File.WriteAllLines(dataFile, lines);
         }
 
         public void Update(string key, string value)

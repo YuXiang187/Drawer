@@ -4,7 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -13,6 +12,7 @@ namespace Drawer
     {
         private readonly KeyValueStore store;
         private readonly MainForm mainForm;
+        private EditForm editForm;
         private readonly FloatForm floatForm;
 
         public NotifyIcon notifyIcon;
@@ -21,24 +21,26 @@ namespace Drawer
         public static ToolStripMenuItem pauseItem;
         public MainTray()
         {
-            store = new KeyValueStore(Path.Combine(Application.StartupPath, "Drawer.config"));
+            store = new KeyValueStore();
 
             if (!File.Exists(Path.Combine(Application.StartupPath, "Drawer.config")))
             {
                 store.Add("Mode", "0");
                 store.Add("isAutoLaunch", "false");
-                store.Add("Key", "wUNAPZUa+PwcYMPifFTPtcJO3i8UKBPHuaHc3caeLos=");
+                store.Add("Key", "Yw5eKi//NQgt69jux/1HfQ==");
+                store.Add("initPool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
+                store.Add("pool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
             }
 
             mainForm = new MainForm(this);
             floatForm = new FloatForm(this);
 
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-            hotKeyItem = new ToolStripMenuItem("Ctrl键");
+            hotKeyItem = new ToolStripMenuItem(Properties.Resources.menu_ctrl);
             hotKeyItem.Click += HotKeyItem_Click;
-            floatFormItem = new ToolStripMenuItem("浮窗");
+            floatFormItem = new ToolStripMenuItem(Properties.Resources.menu_float);
             floatFormItem.Click += FloatFormItem_Click;
-            pauseItem = new ToolStripMenuItem("暂停");
+            pauseItem = new ToolStripMenuItem(Properties.Resources.menu_pause);
             pauseItem.Click += PauseItem_Click;
 
             switch (int.Parse(store.Get("Mode")))
@@ -53,31 +55,60 @@ namespace Drawer
                     break;
             }
 
-            ToolStripMenuItem isAutoLaunchItem = new ToolStripMenuItem("自启")
+            ToolStripMenuItem isAutoLaunchItem = new ToolStripMenuItem(Properties.Resources.menu_start_on_boot)
             {
                 CheckOnClick = true,
                 Checked = bool.Parse(store.Get("isAutoLaunch"))
             };
             isAutoLaunchItem.Click += IsAutoLaunchItem_Click;
 
+            ToolStripMenuItem editItem = new ToolStripMenuItem(Properties.Resources.menu_edit);
+            editItem.Click += EditItem_Click;
+
             _ = contextMenuStrip.Items.Add(hotKeyItem);
             _ = contextMenuStrip.Items.Add(floatFormItem);
             _ = contextMenuStrip.Items.Add(pauseItem);
             _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
             _ = contextMenuStrip.Items.Add(isAutoLaunchItem);
-            _ = contextMenuStrip.Items.Add("统计", null, CountItem_Click);
-            _ = contextMenuStrip.Items.Add("关于", null, AboutItem_Click);
+            _ = contextMenuStrip.Items.Add(editItem);
+            _ = contextMenuStrip.Items.Add(Properties.Resources.menu_statistics, null, CountItem_Click);
+            _ = contextMenuStrip.Items.Add(Properties.Resources.menu_about, null, AboutItem_Click);
             _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
-            _ = contextMenuStrip.Items.Add("退出", null, ExitItem_Click);
+            _ = contextMenuStrip.Items.Add(Properties.Resources.menu_exit, null, ExitItem_Click);
 
             notifyIcon = new NotifyIcon
             {
-                Text = "YuXiang Drawer",
+                Text = Properties.Resources.app_whole_name,
                 Icon = Properties.Resources.tray_run,
                 Visible = true,
                 ContextMenuStrip = contextMenuStrip
             };
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
+        }
+
+        private void EditItem_Click(object sender, EventArgs e)
+        {
+            string key = InputDialog.Show(Properties.Resources.menu_exit, Properties.Resources.dialog_enter_password, true);
+            if (key != null)
+            {
+                EncryptString es = new EncryptString();
+                if (key == es.Decrypt(store.Get("Key")))
+                {
+                    if (editForm == null || editForm.IsDisposed)
+                    {
+                        if (key == "123456")
+                        {
+                            _ = MessageBox.Show(string.Format(Properties.Resources.dialog_password_low_warning,"\n"), Properties.Resources.menu_edit, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        editForm = new EditForm();
+                        editForm.Show();
+                    }
+                }
+                else
+                {
+                    _ = MessageBox.Show(Properties.Resources.dialog_password_wrong, Properties.Resources.menu_edit, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
@@ -92,27 +123,43 @@ namespace Drawer
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
 
-            string taskName = "Drawer";
+            string taskName = Properties.Resources.app_name;
             if (menuItem.Checked == true)
             {
-                using (TaskService taskService = new TaskService())
+                try
                 {
-                    TaskDefinition taskDefinition = taskService.NewTask();
-                    _ = taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
-                    _ = taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
-                    taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
-                    taskDefinition.Settings.Compatibility = TaskCompatibility.V2_3;
-                    _ = taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
+                    using (TaskService taskService = new TaskService())
+                    {
+                        TaskDefinition taskDefinition = taskService.NewTask();
+                        _ = taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
+                        _ = taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
+                        taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
+                        taskDefinition.Settings.Compatibility = TaskCompatibility.V2_3;
+                        _ = taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
+                    }
+                    store.Update("isAutoLaunch", "true");
                 }
-                store.Update("isAutoLaunch", "true");
+                catch (Exception ex)
+                {
+                    _ = MessageBox.Show(string.Format(Properties.Resources.dialog_permission_error, "\n", ex.Message), Properties.Resources.title_error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    menuItem.Checked = false;
+                }
             }
             else
             {
-                using (TaskService taskService = new TaskService())
+                try
                 {
-                    taskService.RootFolder.DeleteTask(taskName, false);
+                    using (TaskService taskService = new TaskService())
+                    {
+                        taskService.RootFolder.DeleteTask(taskName, false);
+                    }
+                    store.Update("isAutoLaunch", "false");
                 }
-                store.Update("isAutoLaunch", "false");
+                catch (Exception ex)
+                {
+                    _ = MessageBox.Show(string.Format(Properties.Resources.dialog_permission_error, "\n", ex.Message), Properties.Resources.title_error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    menuItem.Checked = false;
+                }
             }
         }
 
@@ -147,30 +194,18 @@ namespace Drawer
 
         private void AboutItem_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 3.3\n作者 YuXiang187\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _ = MessageBox.Show(string.Format(Properties.Resources.dialog_about, "\n\n", "\n", "\n\n", "\n\n", "\n", "\n", "\n", "\n", "\n"), Properties.Resources.title_about, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            StringBuilder result = new StringBuilder();
-            foreach (string item in StringPool.GetInitList())
-            {
-                _ = result.Append(item.ToString() + ", ");
-            }
-            if (result.Length > 0)
-            {
-                result.Length -= 2;
-            }
-            _ = MessageBox.Show("统计结果如下。\n\n抽取数量：" + StringPool.GetInitList().Count() + "\n抽取名单：" + result.ToString(), "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _ = MessageBox.Show(string.Format(Properties.Resources.dialog_statistics, "\n\n", StringPool.initPool.Count(), "\n", string.Join(", ", StringPool.initPool)), Properties.Resources.menu_statistics, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("是否退出本软件？", "YuXiang Drawer", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            {
-                notifyIcon.Visible = false;
-                Application.Exit();
-            }
+            notifyIcon.Visible = false;
+            Application.Exit();
         }
 
         public void FloatFormIcon(bool isRunIcon)
@@ -188,17 +223,8 @@ namespace Drawer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (File.Exists(Path.Combine(Application.StartupPath, "list.txt")))
-            {
-                _ = new MainTray();
-                Application.Run();
-
-            }
-            else
-            {
-                _ = MessageBox.Show("没有找到主列表文件(list.es)，软件启动失败。", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-            }
+            _ = new MainTray();
+            Application.Run();
         }
     }
 }

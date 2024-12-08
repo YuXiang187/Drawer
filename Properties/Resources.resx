@@ -118,16 +118,180 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="add" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\add.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="apply" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\apply.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="app_name" xml:space="preserve">
+    <value>Drawer</value>
+  </data>
+  <data name="app_whole_name" xml:space="preserve">
+    <value>YuXiang Drawer</value>
+  </data>
+  <data name="bar_selected" xml:space="preserve">
+    <value>Selected: {0}</value>
+  </data>
+  <data name="bar_total" xml:space="preserve">
+    <value>Total: {0}</value>
+  </data>
+  <data name="button_add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="button_apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="button_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="button_clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="button_export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="button_find" xml:space="preserve">
+    <value>Find</value>
+  </data>
+  <data name="button_help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="button_import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="button_password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="cancel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\cancel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="clear" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\clear.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="dialog_about" xml:space="preserve">
+    <value>YuXiang Drawer: Random Name Picker{0}Version 4.0{1}Author YuXiang187{2}The initial password for the "Edit" function is 123456.{3}The software supports setting a background image, please place the image in the root directory of this software.{4}The recommended image size is 450x250 (9:5), with one of the following names:{5}- background.jpg{6}- background.jpeg{7}- background.png{8}- background.bmp</value>
+    <comment>所有占位符都是换行</comment>
+  </data>
+  <data name="dialog_discard_content" xml:space="preserve">
+    <value>Discard all content?</value>
+  </data>
+  <data name="dialog_no_english_comma" xml:space="preserve">
+    <value>Please do not include the English comma ",".</value>
+  </data>
+  <data name="dialog_enter_password" xml:space="preserve">
+    <value>Password: </value>
+  </data>
+  <data name="dialog_password_low_warning" xml:space="preserve">
+    <value>We've detected that you're using the initial password.{0}To ensure that the list content is not maliciously tampered with, please change your password promptly using the "Password" function.</value>
+    <comment>{0}换行</comment>
+  </data>
+  <data name="dialog_password_wrong" xml:space="preserve">
+    <value>Password incorrect.</value>
+  </data>
+  <data name="dialog_permission_error" xml:space="preserve">
+    <value>Insufficient permissions, unable to create or delete auto-start tasks.{0}{1}</value>
+    <comment>{0}换行，{1}错误信息</comment>
+  </data>
+  <data name="dialog_statistics" xml:space="preserve">
+    <value>The statistics are as follows.{0}Number of draws: {1}{2}List of names drawn: {3}</value>
+    <comment>{0}换行，{1}抽取数量，{2}换行,{3}抽取名单</comment>
+  </data>
+  <data name="export" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\export.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="find" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\find.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="font_name" xml:space="preserve">
+    <value>Segoe UI</value>
+    <comment>字体</comment>
+  </data>
+  <data name="help" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\help.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="import" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\import.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="key" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\key.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="menu_about" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="menu_ctrl" xml:space="preserve">
+    <value>Ctrl key</value>
+  </data>
+  <data name="menu_edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="menu_exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="menu_float" xml:space="preserve">
+    <value>Float window</value>
+  </data>
+  <data name="menu_pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="menu_start_on_boot" xml:space="preserve">
+    <value>Start on boot</value>
+  </data>
+  <data name="menu_statistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="remove" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\remove.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="run" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\run.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stop.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="title_about" xml:space="preserve">
+    <value>About YuXiang Drawer</value>
+  </data>
+  <data name="title_error" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="tray_run" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\tray_run.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="tray_stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\tray_stop.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="dialog_File_filter" xml:space="preserve">
+    <value>Plain text{0}</value>
+  </data>
+  <data name="dialog_document_is_empty" xml:space="preserve">
+    <value>The content of the text file is empty.</value>
+  </data>
+  <data name="dialog_find_complete" xml:space="preserve">
+    <value>Find completed.</value>
+  </data>
+  <data name="dialog_is_clear_content" xml:space="preserve">
+    <value>Clear content?</value>
+  </data>
+  <data name="title_change_password" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="dialog_password_changed" xml:space="preserve">
+    <value>Password has been changed to: {0}{1}</value>
+  </data>
+  <data name="dialog_password_empty_warn" xml:space="preserve">
+    <value>Password cannot be empty.</value>
+  </data>
+  <data name="dialog_editor_help" xml:space="preserve">
+    <value>The syntax for editing the list is:{0}Name1,Name2,Name3,Name4,Name5,...{1}Note: The separator is an English comma.</value>
+  </data>
+  <data name="dialog_content_is_empty" xml:space="preserve">
+    <value>Content cannot be empty.</value>
+  </data>
+  <data name="menu_move" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="menu_close" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

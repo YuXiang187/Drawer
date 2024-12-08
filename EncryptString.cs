@@ -2,28 +2,13 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 
 namespace Drawer
 {
     internal class EncryptString
     {
-        private readonly string pinKey = "cifosrxqj5430986";
-        private string key;
-        private readonly KeyValueStore store;
-        public EncryptString()
-        {
-            key = pinKey;
-            store = new KeyValueStore(Path.Combine(Application.StartupPath, "Drawer.config"));
-            string configKey = Decrypt(store.Get("Key"));
-            key = configKey;
-        }
-        public void ChangeKey(string key)
-        {
-            this.key = pinKey;
-            store.Update("Key", Encrypt(key));
-            this.key = key;
-        }
+        private readonly string key = "3QjNx7RvAU58qkJF";
+
         public string Encrypt(string text)
         {
             using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
@@ -60,17 +45,9 @@ namespace Drawer
                 {
                     using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {
-                        try
+                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                         {
-                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                            {
-                                return srDecrypt.ReadToEnd();
-                            }
-                        }
-                        catch (CryptographicException)
-                        {
-                            _ = MessageBox.Show("列表文件读取失败。\n\n如果单击“确定”按钮后：\n- 程序退出，请再次启动程序。\n- 程序弹出密钥输入窗口，请输入正确的密钥。\n", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return null;
+                            return srDecrypt.ReadToEnd();
                         }
                     }
                 }

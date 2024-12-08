@@ -24,8 +24,7 @@ namespace Drawer
 
             HotkeyManager.Current.AddOrReplace("Default", Keys.Control, OnHotKey);
 
-            Name = "MainForm";
-            Text = "YuXiang Drawer";
+            Text = Properties.Resources.app_whole_name;
             ClientSize = new Size(450, 250);
             TopMost = true;
             ControlBox = false;
@@ -33,7 +32,6 @@ namespace Drawer
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterScreen;
             ShowInTaskbar = false;
-            Click += MainForm_Click;
             Paint += MainForm_Paint;
             FormClosing += MainForm_FormClosing;
             ResumeLayout(false);
@@ -43,24 +41,20 @@ namespace Drawer
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
-                Font = new Font("微软雅黑", 60F, FontStyle.Bold, GraphicsUnit.Point, 134),
+                Font = new Font(Properties.Resources.font_name, 60F, FontStyle.Bold, GraphicsUnit.Point, 134),
                 Location = new Point(12, 49),
-                Name = "mainLabel",
                 Size = new Size(426, 153),
                 Text = "LABEL",
                 TextAlign = ContentAlignment.MiddleCenter
             };
-            mainLabel.Click += MainForm_Click;
 
             progressBar = new ProgressBar
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 Location = new Point(12, 228),
-                Name = "progressBar",
                 Size = new Size(426, 10),
                 Value = 0,
             };
-            progressBar.Click += MainForm_Click;
 
             Controls.Add(mainLabel);
             Controls.Add(progressBar);
@@ -144,11 +138,6 @@ namespace Drawer
                     break;
                 }
             }
-        }
-
-        private void MainForm_Click(object sender, EventArgs e)
-        {
-            Hide();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

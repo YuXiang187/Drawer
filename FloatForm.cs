@@ -14,8 +14,7 @@ namespace Drawer
         {
             this.mainTray = mainTray;
 
-            Name = "FloatForm";
-            Text = "YuXiang FloatDrawer";
+            Text = Properties.Resources.app_name;
             TopMost = true;
             ControlBox = false;
             Load += FloatForm_Load;
@@ -33,9 +32,9 @@ namespace Drawer
             ResumeLayout(false);
 
             // MouseMenu
-            ToolStripMenuItem moveItem = new ToolStripMenuItem("移动");
+            ToolStripMenuItem moveItem = new ToolStripMenuItem(Properties.Resources.menu_move);
             moveItem.Click += Item_Click;
-            ToolStripMenuItem closeItem = new ToolStripMenuItem("关闭");
+            ToolStripMenuItem closeItem = new ToolStripMenuItem(Properties.Resources.menu_close);
             closeItem.Click += Item_Click;
             contextMenu = new ContextMenuStrip();
             _ = contextMenu.Items.Add(moveItem);
@@ -62,11 +61,11 @@ namespace Drawer
         private void Item_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            if (menuItem.Text == "移动")
+            if (menuItem.Text == Properties.Resources.menu_move)
             {
                 isDragging = true;
             }
-            else if (menuItem.Text == "关闭")
+            else if (menuItem.Text == Properties.Resources.menu_close)
             {
                 MainTray.hotKeyItem.Enabled = true;
                 MainTray.floatFormItem.Enabled = true;
