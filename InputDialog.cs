@@ -1,17 +1,19 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace Drawer
 {
     internal class InputDialog
     {
         private static Form inputForm;
+        private static readonly string fontName = "微软雅黑";
         public static string Show(string title, string prompt, bool isPassword)
         {
             inputForm = new Form
             {
                 Text = title,
                 Width = 268,
-                Height = 68,
+                Height = 72,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 StartPosition = FormStartPosition.CenterScreen,
                 ShowInTaskbar = false,
@@ -19,13 +21,17 @@ namespace Drawer
                 MaximizeBox = false
             };
 
-            ToolStrip toolStrip = new ToolStrip();
+            ToolStrip toolStrip = new ToolStrip
+            {
+                ImageScalingSize = new Size(20, 20)
+            };
 
-            ToolStripLabel promptLabel = new ToolStripLabel(prompt);
+            ToolStripLabel promptLabel = new ToolStripLabel(prompt) { Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134) };
 
             ToolStripTextBox inputTextBox = new ToolStripTextBox
             {
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134)
             };
             inputTextBox.TextBox.UseSystemPasswordChar = isPassword;
             inputTextBox.KeyDown += InputTextBox_KeyDown;

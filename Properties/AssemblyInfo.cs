@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Resources;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,8 +11,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("YuXiang187")]
 [assembly: AssemblyProduct("Drawer")]
-[assembly: AssemblyCopyright("Copyleft YuXiang187")]
-[assembly: AssemblyTrademark("YuXiang187")]
+[assembly: AssemblyCopyright("Copyright (C) YuXiang187 2024")]
+[assembly: AssemblyTrademark("(C) YuXiang187")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 会使此程序集中的类型
@@ -20,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("c24b0256-90e2-4873-85fe-32ebaf66051c")]
+[assembly: Guid("fe275509-85d7-4450-81a4-bac2e5ece631")]
 
 // 程序集的版本信息由下列四个值组成: 
 //
@@ -31,3 +32,4 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("4.0.0.0")]
 [assembly: AssemblyFileVersion("4.0.0.0")]
+[assembly: NeutralResourcesLanguage("zh")]

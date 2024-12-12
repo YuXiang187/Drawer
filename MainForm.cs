@@ -1,9 +1,9 @@
-﻿using NHotkey;
-using NHotkey.WindowsForms;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using NHotkey;
+using NHotkey.WindowsForms;
 
 namespace Drawer
 {
@@ -11,6 +11,7 @@ namespace Drawer
     {
         public bool isRun = false;
         public static bool isHotKey = false;
+        private static readonly string fontName = "微软雅黑";
 
         private readonly StringPool pool;
         private readonly MainTray mainTray;
@@ -24,7 +25,7 @@ namespace Drawer
 
             HotkeyManager.Current.AddOrReplace("Default", Keys.Control, OnHotKey);
 
-            Text = Properties.Resources.app_whole_name;
+            Text = "YuXiang Drawer";
             ClientSize = new Size(450, 250);
             TopMost = true;
             ControlBox = false;
@@ -41,7 +42,7 @@ namespace Drawer
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
-                Font = new Font(Properties.Resources.font_name, 60F, FontStyle.Bold, GraphicsUnit.Point, 134),
+                Font = new Font(fontName, 60F, FontStyle.Bold, GraphicsUnit.Point, 134),
                 Location = new Point(12, 49),
                 Size = new Size(426, 153),
                 Text = "LABEL",

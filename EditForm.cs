@@ -28,6 +28,7 @@ namespace Drawer
         private readonly Button addButton;
         private readonly Button removeButton;
 
+        private static readonly string fontName = "微软雅黑";
         private readonly EncryptString es;
         private readonly KeyValueStore store;
         private List<string> list;
@@ -65,54 +66,54 @@ namespace Drawer
             | ToolStripStatusLabelBorderSides.Top
             | ToolStripStatusLabelBorderSides.Right
             | ToolStripStatusLabelBorderSides.Bottom;
-            totalStripStatusLabel.Text = string.Format(Properties.Resources.bar_total, 0);
+            totalStripStatusLabel.Text = "总数：0";
 
             selectStripStatusLabel.BorderSides = ToolStripStatusLabelBorderSides.Left
             | ToolStripStatusLabelBorderSides.Top
             | ToolStripStatusLabelBorderSides.Right
             | ToolStripStatusLabelBorderSides.Bottom;
-            selectStripStatusLabel.Text = string.Format(Properties.Resources.bar_selected, 0);
+            selectStripStatusLabel.Text = "选中：0";
 
             importStripButton.Image = Properties.Resources.import;
-            importStripButton.Text = Properties.Resources.button_import;
+            importStripButton.Text = "导入";
             importStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             importStripButton.Click += ImportStripButton_Click;
 
             exportStripButton.Image = Properties.Resources.export;
-            exportStripButton.Text = Properties.Resources.button_export;
+            exportStripButton.Text = "导出";
             exportStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             exportStripButton.Click += ExportStripButton_Click;
 
             searchStripTextBox.BorderStyle = BorderStyle.FixedSingle;
-            searchStripTextBox.Font = new Font(Properties.Resources.font_name, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            searchStripTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
 
             searchStripButton.Image = Properties.Resources.find;
-            searchStripButton.Text = Properties.Resources.button_find;
+            searchStripButton.Text = "查找";
             searchStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             searchStripButton.Click += SearchStripButton_Click;
 
             clearStripButton.Image = Properties.Resources.clear;
-            clearStripButton.Text = Properties.Resources.button_clear;
+            clearStripButton.Text = "清空";
             clearStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             clearStripButton.Click += ClearStripButton_Click;
 
             keyStripButton.Image = Properties.Resources.key;
-            keyStripButton.Text = Properties.Resources.button_password;
+            keyStripButton.Text = "密码";
             keyStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             keyStripButton.Click += KeyStripButton_Click;
 
             helpStripButton.Image = Properties.Resources.help;
-            helpStripButton.Text = Properties.Resources.button_help;
+            helpStripButton.Text = "帮助";
             helpStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             helpStripButton.Click += HelpStripButton_Click;
 
             cancelStripButton.Image = Properties.Resources.cancel;
-            cancelStripButton.Text = Properties.Resources.button_cancel;
+            cancelStripButton.Text = "取消";
             cancelStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             cancelStripButton.Click += CancelStripButton_Click;
 
             applyStripButton.Image = Properties.Resources.apply;
-            applyStripButton.Text = Properties.Resources.button_apply;
+            applyStripButton.Text = "应用";
             applyStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             applyStripButton.Click += ApplyStripButton_Click;
 
@@ -133,17 +134,18 @@ namespace Drawer
 
             listBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listBox.BorderStyle = BorderStyle.FixedSingle;
-            listBox.Font = new Font(Properties.Resources.font_name, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            listBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             listBox.ItemHeight = 27;
             listBox.Location = new Point(12, 50);
             listBox.ScrollAlwaysVisible = true;
             listBox.SelectionMode = SelectionMode.MultiExtended;
             listBox.Size = new Size(236, 353);
             listBox.SelectedIndexChanged += ListBox_SelectedIndexChanged;
+            listBox.DoubleClick += ListBox_DoubleClick;
 
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Font = new Font(Properties.Resources.font_name, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            textBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             textBox.Location = new Point(254, 50);
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
@@ -153,7 +155,7 @@ namespace Drawer
 
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
-            addTextBox.Font = new Font(Properties.Resources.font_name, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            addTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             addTextBox.Location = new Point(254, 372);
             addTextBox.Size = new Size(436, 34);
             addTextBox.KeyDown += AddTextBox_KeyDown;
@@ -174,7 +176,7 @@ namespace Drawer
             removeButton.UseVisualStyleBackColor = true;
             removeButton.Click += RemoveButton_Click;
 
-            Text = Properties.Resources.app_whole_name;
+            Text = "YuXiang Drawer";
             ClientSize = new Size(782, 433);
             Controls.Add(statusStrip);
             Controls.Add(toolStrip);
@@ -192,16 +194,24 @@ namespace Drawer
             textBox.Text = string.Join(",", StringPool.initPool);
         }
 
+        private void ListBox_DoubleClick(object sender, EventArgs e)
+        {
+            if (listBox.SelectedItems.Count > 0)
+            {
+                searchStripTextBox.Text = listBox.SelectedItems[0].ToString();
+            }
+        }
+
         private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            selectStripStatusLabel.Text = string.Format(Properties.Resources.bar_selected, listBox.SelectedIndices.Count);
+            selectStripStatusLabel.Text = $"选中：{listBox.SelectedIndices.Count}";
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                DialogResult result = MessageBox.Show(Properties.Resources.dialog_discard_content, Properties.Resources.menu_exit, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show("是否丢弃所有内容？", "退出", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.No)
                 {
                     e.Cancel = true;
@@ -227,7 +237,7 @@ namespace Drawer
                 }
                 else
                 {
-                    _ = MessageBox.Show(Properties.Resources.dialog_no_english_comma, Properties.Resources.button_add, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show("请不要包含英文逗号“,”。", "添加", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             else
@@ -283,7 +293,7 @@ namespace Drawer
             listBox.ClearSelected();
             listBox.SelectedIndex = listBox.Items.Count - 1;
             textBox.ScrollToCaret();
-            totalStripStatusLabel.Text = string.Format(Properties.Resources.bar_total, listBox.Items.Count);
+            totalStripStatusLabel.Text = $"总数：{listBox.Items.Count}";
 
             // ban whitespace when paste
             if (textBox != null)
@@ -292,15 +302,13 @@ namespace Drawer
                 string newText = originalText
                     .Replace(" ", "")
                     .Replace("\t", "")
-                    .Replace("\n", "")
+                    .Replace("\n", ",")
                     .Replace("\r", "");
 
-                // update cursor location
                 if (originalText != newText)
                 {
-                    int cursorPosition = textBox.SelectionStart;
                     textBox.Text = newText;
-                    textBox.SelectionStart = Math.Min(cursorPosition, textBox.Text.Length);
+                    textBox.SelectionStart = Math.Min(textBox.SelectionStart, textBox.Text.Length);
                 }
             }
         }
@@ -309,7 +317,7 @@ namespace Drawer
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = string.Format(Properties.Resources.dialog_File_filter, "|*.txt"),
+                Filter = "文本文档|*.txt",
                 Multiselect = false
             };
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -323,7 +331,7 @@ namespace Drawer
                     }
                     else
                     {
-                        _ = MessageBox.Show(Properties.Resources.dialog_document_is_empty, Properties.Resources.button_import, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        _ = MessageBox.Show("文本文件的内容为空。", "导入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
             }
@@ -336,16 +344,17 @@ namespace Drawer
                 SaveFileDialog saveFileDialog = new SaveFileDialog
                 {
                     FileName = "*.txt",
-                    Filter = string.Format(Properties.Resources.dialog_File_filter, "|*.txt")
+                    Filter = "文本文档|*.txt"
                 };
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    File.WriteAllText(saveFileDialog.FileName, textBox.Text);
+                    _ = list.RemoveAll(s => string.IsNullOrEmpty(s));
+                    File.WriteAllText(saveFileDialog.FileName, string.Join(",", list));
                 }
             }
             else
             {
-                _ = MessageBox.Show(Properties.Resources.dialog_content_is_empty, Properties.Resources.button_export, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("内容不能为空。", "导出", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -353,7 +362,7 @@ namespace Drawer
         {
             string searchText = searchStripTextBox.Text;
 
-            if (!string.IsNullOrEmpty(searchText) && !string.IsNullOrEmpty(textBox.Text))
+            if (!string.IsNullOrEmpty(searchText))
             {
                 int index = textBox.Text.IndexOf(searchText, foundIndex, StringComparison.OrdinalIgnoreCase);
 
@@ -371,7 +380,7 @@ namespace Drawer
                 else
                 {
                     foundIndex = 0;
-                    _ = MessageBox.Show(Properties.Resources.dialog_find_complete, Properties.Resources.button_find, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _ = MessageBox.Show("查找完毕。", "查找", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -380,7 +389,7 @@ namespace Drawer
         {
             if (textBox.Text.Length > 0)
             {
-                if (MessageBox.Show(Properties.Resources.dialog_is_clear_content, Properties.Resources.button_clear, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("是否清空内容？", "清空", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     textBox.Clear();
                     searchStripTextBox.Clear();
@@ -395,31 +404,39 @@ namespace Drawer
 
         private void KeyStripButton_Click(object sender, EventArgs e)
         {
-            string key = InputDialog.Show(Properties.Resources.title_change_password, Properties.Resources.dialog_enter_password, false);
-            if (key != null)
+            EncryptString es = new EncryptString();
+
+            string currectKey = es.Decrypt(store.Get("Key"));
+            string key = InputDialog.Show("更改密码", "原密码：", true);
+            if (key == currectKey)
             {
-                if (!string.IsNullOrEmpty(key))
+                string changeKey = InputDialog.Show("更改密码", "新密码：", false);
+                if (!string.IsNullOrEmpty(changeKey))
                 {
-                    store.Update("Key", es.Encrypt(key));
-                    _ = MessageBox.Show(string.Format(Properties.Resources.dialog_password_changed, "\n", key), Properties.Resources.title_change_password, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    store.Update("Key", es.Encrypt(changeKey));
+                    _ = MessageBox.Show($"密码已更改为：\n{changeKey}", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    _ = MessageBox.Show(Properties.Resources.dialog_password_empty_warn, Properties.Resources.title_change_password, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show("密码不能为空。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+            }
+            else
+            {
+                _ = MessageBox.Show("密码错误。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void HelpStripButton_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show(string.Format(Properties.Resources.dialog_editor_help, "\n\n", "\n\n"), Properties.Resources.button_help, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _ = MessageBox.Show("编辑列表的语法为：\n\n名称1,名称2,名称3,名称4,名称5,...\n\n注意：分割符为英文逗号，不是中文逗号！", "帮助", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CancelStripButton_Click(object sender, EventArgs e)
         {
             if (textBox.Text.Length > 0)
             {
-                DialogResult result = MessageBox.Show(Properties.Resources.dialog_discard_content, Properties.Resources.menu_exit, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show("是否丢弃所有内容？", "退出", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
                     Dispose();
@@ -435,17 +452,18 @@ namespace Drawer
         {
             if (textBox.Text.Length > 0)
             {
-                store.Update("initPool", es.Encrypt(textBox.Text));
-                store.Update("pool", es.Encrypt(textBox.Text));
+                _ = list.RemoveAll(s => string.IsNullOrEmpty(s));
                 StringPool.initPool = new List<string>(list);
                 StringPool.pool = new List<string>(list);
+                store.Update("initPool", es.Encrypt(string.Join(",", list)));
+                store.Update("pool", es.Encrypt(string.Join(",", list)));
                 Dispose();
 
-                _ = MessageBox.Show(string.Format(Properties.Resources.dialog_statistics, "\n\n", StringPool.initPool.Count(), "\n", string.Join(", ", StringPool.initPool)), Properties.Resources.menu_statistics, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _ = MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                _ = MessageBox.Show(Properties.Resources.dialog_content_is_empty, Properties.Resources.button_apply, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("内容不能为空。", "应用", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }
