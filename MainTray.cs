@@ -81,7 +81,7 @@ namespace Drawer
                 Text = "YuXiang Drawer",
                 Icon = Properties.Resources.tray_run,
                 Visible = true,
-                ContextMenuStrip = contextMenuStrip,
+                ContextMenuStrip = contextMenuStrip
             };
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
         }
@@ -198,6 +198,7 @@ namespace Drawer
             floatForm.Show();
             store.Update("Mode", "1");
         }
+
         private void PauseItem_Click(object sender, EventArgs e)
         {
             hotKeyItem.Enabled = true;

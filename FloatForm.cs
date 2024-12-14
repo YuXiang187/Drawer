@@ -39,7 +39,6 @@ namespace Drawer
             contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add(moveItem);
             contextMenu.Items.Add(closeItem);
-
         }
 
         // set do not appear in Alt+Tab list
