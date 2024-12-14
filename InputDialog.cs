@@ -12,7 +12,7 @@ namespace Drawer
             inputForm = new Form
             {
                 Text = title,
-                Width = 268,
+                Width = 260,
                 Height = 72,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 StartPosition = FormStartPosition.CenterScreen,
@@ -26,7 +26,10 @@ namespace Drawer
                 ImageScalingSize = new Size(20, 20)
             };
 
-            ToolStripLabel promptLabel = new ToolStripLabel(prompt) { Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134) };
+            ToolStripLabel promptLabel = new ToolStripLabel(prompt)
+            {
+                Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134)
+            };
 
             ToolStripTextBox inputTextBox = new ToolStripTextBox
             {
@@ -48,11 +51,11 @@ namespace Drawer
             };
             cancelButton.Click += (sender, e) => { inputForm.DialogResult = DialogResult.Cancel; inputForm.Close(); };
 
-            _ = toolStrip.Items.Add(promptLabel);
-            _ = toolStrip.Items.Add(inputTextBox);
-            _ = toolStrip.Items.Add(new ToolStripSeparator());
-            _ = toolStrip.Items.Add(okButton);
-            _ = toolStrip.Items.Add(cancelButton);
+            toolStrip.Items.Add(promptLabel);
+            toolStrip.Items.Add(inputTextBox);
+            toolStrip.Items.Add(new ToolStripSeparator());
+            toolStrip.Items.Add(okButton);
+            toolStrip.Items.Add(cancelButton);
 
             inputForm.Controls.Add(toolStrip);
 

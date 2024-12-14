@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.Windows.Forms;
 using Microsoft.Win32.TaskScheduler;
+using NHotkey.WindowsForms;
 
 namespace Drawer
 {
@@ -27,6 +28,7 @@ namespace Drawer
             {
                 store.Add("Mode", "0");
                 store.Add("isAutoLaunch", "false");
+                store.Add("Hotkey", "ControlKey, Control");
                 store.Add("Key", "Yw5eKi//NQgt69jux/1HfQ==");
                 store.Add("initPool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
                 store.Add("pool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
@@ -36,7 +38,7 @@ namespace Drawer
             floatForm = new FloatForm(this);
 
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-            hotKeyItem = new ToolStripMenuItem("Ctrl键");
+            hotKeyItem = new ToolStripMenuItem("热键");
             hotKeyItem.Click += HotKeyItem_Click;
             floatFormItem = new ToolStripMenuItem("浮窗");
             floatFormItem.Click += FloatFormItem_Click;
@@ -62,49 +64,65 @@ namespace Drawer
             };
             isAutoLaunchItem.Click += IsAutoLaunchItem_Click;
 
-            ToolStripMenuItem editItem = new ToolStripMenuItem("编辑");
-            editItem.Click += EditItem_Click;
-
-            _ = contextMenuStrip.Items.Add(hotKeyItem);
-            _ = contextMenuStrip.Items.Add(floatFormItem);
-            _ = contextMenuStrip.Items.Add(pauseItem);
-            _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
-            _ = contextMenuStrip.Items.Add(isAutoLaunchItem);
-            _ = contextMenuStrip.Items.Add(editItem);
-            _ = contextMenuStrip.Items.Add("统计", null, CountItem_Click);
-            _ = contextMenuStrip.Items.Add("关于", null, AboutItem_Click);
-            _ = contextMenuStrip.Items.Add(new ToolStripSeparator());
-            _ = contextMenuStrip.Items.Add("退出", null, ExitItem_Click);
+            contextMenuStrip.Items.Add(hotKeyItem);
+            contextMenuStrip.Items.Add(floatFormItem);
+            contextMenuStrip.Items.Add(pauseItem);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            contextMenuStrip.Items.Add(isAutoLaunchItem);
+            contextMenuStrip.Items.Add("设置", null, SettingItem_Click);
+            contextMenuStrip.Items.Add("编辑", null, EditItem_Click);
+            contextMenuStrip.Items.Add("统计", null, CountItem_Click);
+            contextMenuStrip.Items.Add("关于", null, AboutItem_Click);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            contextMenuStrip.Items.Add("退出", null, ExitItem_Click);
 
             notifyIcon = new NotifyIcon
             {
                 Text = "YuXiang Drawer",
                 Icon = Properties.Resources.tray_run,
                 Visible = true,
-                ContextMenuStrip = contextMenuStrip
+                ContextMenuStrip = contextMenuStrip,
             };
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
+        }
+
+        private void SettingItem_Click(object sender, EventArgs e)
+        {
+            Keys key = HotkeyDialog.GetKeys("设置", "更改热键：", store.Get("Hotkey"));
+            if (key != Keys.None)
+            {
+                store.Update("Hotkey", key.ToString());
+                HotkeyManager.Current.AddOrReplace("Default", key, mainForm.OnHotKey);
+                MessageBox.Show($"热键已更改为：\n{key}", "更改热键", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void EditItem_Click(object sender, EventArgs e)
         {
             string currectKey = new EncryptString().Decrypt(store.Get("Key"));
             string key = InputDialog.Show("编辑", "密码：", true);
-            if (key != null && key == currectKey)
+            if (key != null)
             {
-                if (editForm == null || editForm.IsDisposed)
+                if (key == currectKey)
                 {
-                    if (key == "123456")
+                    if (editForm == null || editForm.IsDisposed)
                     {
-                        _ = MessageBox.Show("检测到您正在使用初始密码。\n为确保列表内容不被恶意篡改，请及时使用“密码”功能更换密码。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        if (key == "123456")
+                        {
+                            MessageBox.Show("检测到您正在使用初始密码。\n为确保列表内容不被恶意篡改，请及时使用“密码”功能更换密码。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        editForm = new EditForm();
+                        editForm.Show();
                     }
-                    editForm = new EditForm();
-                    editForm.Show();
+                    else
+                    {
+                        editForm.Focus();
+                    }
                 }
-            }
-            else
-            {
-                _ = MessageBox.Show("密码错误。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else
+                {
+                    MessageBox.Show("密码错误。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -128,17 +146,17 @@ namespace Drawer
                     using (TaskService taskService = new TaskService())
                     {
                         TaskDefinition taskDefinition = taskService.NewTask();
-                        _ = taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
-                        _ = taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
+                        taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
+                        taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
                         taskDefinition.Principal.RunLevel = TaskRunLevel.LUA;
                         taskDefinition.Settings.Compatibility = TaskCompatibility.V2_3;
-                        _ = taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
+                        taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
                     }
                     store.Update("isAutoLaunch", "true");
                 }
                 catch (Exception ex)
                 {
-                    _ = MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     menuItem.Checked = false;
                 }
             }
@@ -154,7 +172,7 @@ namespace Drawer
                 }
                 catch (Exception ex)
                 {
-                    _ = MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     menuItem.Checked = false;
                 }
             }
@@ -191,12 +209,12 @@ namespace Drawer
 
         private void AboutItem_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.0\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.0\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
@@ -220,7 +238,7 @@ namespace Drawer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            _ = new MainTray();
+            new MainTray();
             Application.Run();
         }
     }

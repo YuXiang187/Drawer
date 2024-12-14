@@ -42,7 +42,7 @@ namespace Drawer
 
         public void Remove(string value)
         {
-            _ = pool.Remove(value);
+            pool.Remove(value);
         }
 
         public void Save()

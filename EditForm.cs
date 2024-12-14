@@ -237,7 +237,7 @@ namespace Drawer
                 }
                 else
                 {
-                    _ = MessageBox.Show("请不要包含英文逗号“,”。", "添加", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("请不要包含英文逗号“,”。", "添加", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             else
@@ -331,7 +331,7 @@ namespace Drawer
                     }
                     else
                     {
-                        _ = MessageBox.Show("文本文件的内容为空。", "导入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("文本文件的内容为空。", "导入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
             }
@@ -348,13 +348,13 @@ namespace Drawer
                 };
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    _ = list.RemoveAll(s => string.IsNullOrEmpty(s));
+                    list.RemoveAll(s => string.IsNullOrEmpty(s));
                     File.WriteAllText(saveFileDialog.FileName, string.Join(",", list));
                 }
             }
             else
             {
-                _ = MessageBox.Show("内容不能为空。", "导出", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("内容不能为空。", "导出", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -368,7 +368,7 @@ namespace Drawer
 
                 if (!textBox.Focused)
                 {
-                    _ = textBox.Focus();
+                    textBox.Focus();
                 }
 
                 if (index != -1)
@@ -380,7 +380,7 @@ namespace Drawer
                 else
                 {
                     foundIndex = 0;
-                    _ = MessageBox.Show("查找完毕。", "查找", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("查找完毕。", "查找", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -408,28 +408,31 @@ namespace Drawer
 
             string currectKey = es.Decrypt(store.Get("Key"));
             string key = InputDialog.Show("更改密码", "原密码：", true);
-            if (key == currectKey)
+            if (key != null)
             {
-                string changeKey = InputDialog.Show("更改密码", "新密码：", false);
-                if (!string.IsNullOrEmpty(changeKey))
+                if (key == currectKey)
                 {
-                    store.Update("Key", es.Encrypt(changeKey));
-                    _ = MessageBox.Show($"密码已更改为：\n{changeKey}", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string changeKey = InputDialog.Show("更改密码", "新密码：", false);
+                    if (!string.IsNullOrEmpty(changeKey))
+                    {
+                        store.Update("Key", es.Encrypt(changeKey));
+                        MessageBox.Show($"密码已更改为：\n{changeKey}", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("密码不能为空。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 }
                 else
                 {
-                    _ = MessageBox.Show("密码不能为空。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("密码错误。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }
-            else
-            {
-                _ = MessageBox.Show("密码错误。", "更改密码", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void HelpStripButton_Click(object sender, EventArgs e)
         {
-            _ = MessageBox.Show("编辑列表的语法为：\n\n名称1,名称2,名称3,名称4,名称5,...\n\n注意：分割符为英文逗号，不是中文逗号！", "帮助", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("编辑列表的语法为：\n\n名称1,名称2,名称3,名称4,名称5,...\n\n注意：分割符为英文逗号，不是中文逗号！", "帮助", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CancelStripButton_Click(object sender, EventArgs e)
@@ -452,18 +455,18 @@ namespace Drawer
         {
             if (textBox.Text.Length > 0)
             {
-                _ = list.RemoveAll(s => string.IsNullOrEmpty(s));
+                list.RemoveAll(s => string.IsNullOrEmpty(s));
                 StringPool.initPool = new List<string>(list);
                 StringPool.pool = new List<string>(list);
                 store.Update("initPool", es.Encrypt(string.Join(",", list)));
                 store.Update("pool", es.Encrypt(string.Join(",", list)));
                 Dispose();
 
-                _ = MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                _ = MessageBox.Show("内容不能为空。", "应用", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("内容不能为空。", "应用", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

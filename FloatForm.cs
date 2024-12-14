@@ -37,8 +37,8 @@ namespace Drawer
             ToolStripMenuItem closeItem = new ToolStripMenuItem("关闭");
             closeItem.Click += Item_Click;
             contextMenu = new ContextMenuStrip();
-            _ = contextMenu.Items.Add(moveItem);
-            _ = contextMenu.Items.Add(closeItem);
+            contextMenu.Items.Add(moveItem);
+            contextMenu.Items.Add(closeItem);
 
         }
 

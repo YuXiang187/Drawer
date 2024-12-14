@@ -23,7 +23,7 @@ namespace Drawer
             this.mainTray = mainTray;
             pool = new StringPool();
 
-            HotkeyManager.Current.AddOrReplace("Default", Keys.Control, OnHotKey);
+            HotkeyManager.Current.AddOrReplace("Default", (Keys)Enum.Parse(typeof(Keys), new KeyValueStore().Get("Hotkey")), OnHotKey);
 
             Text = "YuXiang Drawer";
             ClientSize = new Size(450, 250);
@@ -146,7 +146,7 @@ namespace Drawer
             Hide();
         }
 
-        private void OnHotKey(object sender, HotkeyEventArgs e)
+        public void OnHotKey(object sender, HotkeyEventArgs e)
         {
             if (isHotKey == true)
             {
