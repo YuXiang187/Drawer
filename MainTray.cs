@@ -28,7 +28,7 @@ namespace Drawer
             {
                 store.Add("Mode", "0");
                 store.Add("isAutoLaunch", "false");
-                store.Add("Hotkey", "ControlKey, Control");
+                store.Add("Hotkey", "F8");
                 store.Add("Key", "Yw5eKi//NQgt69jux/1HfQ==");
                 store.Add("initPool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
                 store.Add("pool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=");
