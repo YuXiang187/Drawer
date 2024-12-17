@@ -29,12 +29,14 @@ namespace Drawer
         private readonly Button removeButton;
 
         private static readonly string fontName = "微软雅黑";
+        private static float dpiScale;
         private readonly EncryptString es;
         private readonly KeyValueStore store;
         private List<string> list;
         private int foundIndex = 0;
         public EditForm()
         {
+            dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
             es = new EncryptString();
             store = new KeyValueStore();
             list = new List<string>();
@@ -117,7 +119,7 @@ namespace Drawer
             applyStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             applyStripButton.Click += ApplyStripButton_Click;
 
-            toolStrip.ImageScalingSize = new Size(20, 20);
+            toolStrip.ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale));
             toolStrip.Items.AddRange(new ToolStripItem[] {
             importStripButton,
             exportStripButton,
@@ -136,48 +138,48 @@ namespace Drawer
             listBox.BorderStyle = BorderStyle.FixedSingle;
             listBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             listBox.ItemHeight = 27;
-            listBox.Location = new Point(12, 50);
+            listBox.Location = new Point((int)(12 * dpiScale), (int)(50 * dpiScale));
             listBox.ScrollAlwaysVisible = true;
             listBox.SelectionMode = SelectionMode.MultiExtended;
-            listBox.Size = new Size(236, 353);
+            listBox.Size = new Size((int)(236 * dpiScale), (int)(353 * dpiScale));
             listBox.SelectedIndexChanged += ListBox_SelectedIndexChanged;
             listBox.DoubleClick += ListBox_DoubleClick;
 
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
             textBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            textBox.Location = new Point(254, 50);
+            textBox.Location = new Point((int)(254 * dpiScale), (int)(50 * dpiScale));
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
-            textBox.Size = new Size(516, 314);
+            textBox.Size = new Size((int)(516 * dpiScale), (int)(314 * dpiScale));
             textBox.TextChanged += TextBox_TextChanged;
             textBox.KeyPress += TextBox_KeyPress;
 
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
             addTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            addTextBox.Location = new Point(254, 372);
-            addTextBox.Size = new Size(436, 34);
+            addTextBox.Location = new Point((int)(254 * dpiScale), (int)(372 * dpiScale));
+            addTextBox.Size = new Size((int)(436 * dpiScale), (int)(34 * dpiScale));
             addTextBox.KeyDown += AddTextBox_KeyDown;
 
             addButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             addButton.BackgroundImage = Properties.Resources.add;
             addButton.BackgroundImageLayout = ImageLayout.Zoom;
-            addButton.Location = new Point(696, 370);
-            addButton.Size = new Size(34, 34);
+            addButton.Location = new Point((int)(696 * dpiScale), (int)(370 * dpiScale));
+            addButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             addButton.UseVisualStyleBackColor = true;
             addButton.Click += AddButton_Click;
 
             removeButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             removeButton.BackgroundImage = Properties.Resources.remove;
             removeButton.BackgroundImageLayout = ImageLayout.Zoom;
-            removeButton.Location = new Point(736, 370);
-            removeButton.Size = new Size(34, 34);
+            removeButton.Location = new Point((int)(736 * dpiScale), (int)(370 * dpiScale));
+            removeButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             removeButton.UseVisualStyleBackColor = true;
             removeButton.Click += RemoveButton_Click;
 
             Text = "YuXiang Drawer";
-            ClientSize = new Size(782, 433);
+            ClientSize = new Size((int)(782 * dpiScale), (int)(433 * dpiScale));
             Controls.Add(statusStrip);
             Controls.Add(toolStrip);
             Controls.Add(removeButton);
@@ -186,10 +188,15 @@ namespace Drawer
             Controls.Add(listBox);
             Controls.Add(addTextBox);
             Icon = Properties.Resources.tray_run;
-            MinimumSize = new Size(600, 400);
-            StartPosition = FormStartPosition.CenterScreen;
+            MinimumSize = new Size((int)(600 * dpiScale), (int)(400 * dpiScale));
+            AutoScaleMode = AutoScaleMode.Dpi;
+            StartPosition = FormStartPosition.Manual;
             FormClosing += MainForm_FormClosing;
             ResumeLayout(false);
+
+            // set location in center
+            Rectangle screenArea = Screen.AllScreens.FirstOrDefault(s => s.Primary).WorkingArea;
+            Location = new Point((screenArea.Width - Width) / 2, (screenArea.Height - Height) / 2);
 
             textBox.Text = string.Join(",", StringPool.initPool);
         }

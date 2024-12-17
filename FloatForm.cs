@@ -10,8 +10,10 @@ namespace Drawer
         private bool isDragging = false;
         private readonly MainTray mainTray;
         private readonly ContextMenuStrip contextMenu;
+        private static float dpiScale;
         public FloatForm(MainTray mainTray)
         {
+            dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
             this.mainTray = mainTray;
 
             Text = "Drawer";
@@ -25,10 +27,10 @@ namespace Drawer
             MouseMove += FloatForm_MouseMove;
             MouseUp += FloatForm_MouseUp;
             MouseClick += FloatForm_MouseClick;
-            MinimumSize = new Size(38, 38);
-            Size = new Size(38, 38);
+            Size = new Size((int)(38 * dpiScale), (int)(38 * dpiScale));
+            AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
-            Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - Width - 22, Screen.PrimaryScreen.WorkingArea.Bottom - Height - 16);
+            Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - Width - (int)(23 * dpiScale), Screen.PrimaryScreen.WorkingArea.Bottom - Height - (int)(16 * dpiScale));
             ResumeLayout(false);
 
             // MouseMenu

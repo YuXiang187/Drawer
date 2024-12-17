@@ -5,29 +5,30 @@ namespace Drawer
 {
     internal class HotkeyDialog
     {
-        private static Form inputForm;
+        private static Form hotkeyForm;
         private static readonly string fontName = "微软雅黑";
+        private static float dpiScale;
         private static ToolStripTextBox inputTextBox;
         private static Keys hotkey;
 
         public static Keys GetKeys(string title, string prompt, string boxText)
         {
-            inputForm = new Form
-            {
-                Text = title,
-                Width = 370,
-                Height = 72,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                StartPosition = FormStartPosition.CenterScreen,
-                ShowInTaskbar = false,
-                MinimizeBox = false,
-                MaximizeBox = false
-            };
-            inputForm.KeyDown += InputForm_KeyDown;
+            hotkeyForm = new Form();
+            dpiScale = Graphics.FromHwnd(hotkeyForm.Handle).DpiX / 96f;
+            hotkeyForm.Text = title;
+            hotkeyForm.Width = (int)(370 * dpiScale);
+            hotkeyForm.Height = (int)(72 * dpiScale);
+            hotkeyForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            hotkeyForm.AutoScaleMode = AutoScaleMode.Dpi;
+            hotkeyForm.StartPosition = FormStartPosition.CenterScreen;
+            hotkeyForm.ShowInTaskbar = false;
+            hotkeyForm.MinimizeBox = false;
+            hotkeyForm.MaximizeBox = false;
+            hotkeyForm.KeyDown += InputForm_KeyDown;
 
             ToolStrip toolStrip = new ToolStrip
             {
-                ImageScalingSize = new Size(20, 20)
+                ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale))
             };
 
             ToolStripLabel promptLabel = new ToolStripLabel(prompt)
@@ -37,7 +38,7 @@ namespace Drawer
 
             inputTextBox = new ToolStripTextBox
             {
-                Width = 180,
+                Width = (int)(180 * dpiScale),
                 Text = boxText,
                 Enabled = false,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -48,13 +49,13 @@ namespace Drawer
             {
                 Image = Properties.Resources.apply
             };
-            okButton.Click += (sender, e) => { inputForm.DialogResult = DialogResult.OK; inputForm.Close(); };
+            okButton.Click += (sender, e) => { hotkeyForm.DialogResult = DialogResult.OK; hotkeyForm.Close(); };
 
             ToolStripButton cancelButton = new ToolStripButton
             {
                 Image = Properties.Resources.cancel
             };
-            cancelButton.Click += (sender, e) => { inputForm.DialogResult = DialogResult.Cancel; inputForm.Close(); };
+            cancelButton.Click += (sender, e) => { hotkeyForm.DialogResult = DialogResult.Cancel; hotkeyForm.Close(); };
 
             toolStrip.Items.Add(promptLabel);
             toolStrip.Items.Add(inputTextBox);
@@ -62,9 +63,9 @@ namespace Drawer
             toolStrip.Items.Add(okButton);
             toolStrip.Items.Add(cancelButton);
 
-            inputForm.Controls.Add(toolStrip);
+            hotkeyForm.Controls.Add(toolStrip);
 
-            return inputForm.ShowDialog() == DialogResult.OK ? hotkey : Keys.None;
+            return hotkeyForm.ShowDialog() == DialogResult.OK ? hotkey : Keys.None;
         }
 
         private static void InputForm_KeyDown(object sender, KeyEventArgs e)

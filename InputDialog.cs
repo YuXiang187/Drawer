@@ -7,23 +7,25 @@ namespace Drawer
     {
         private static Form inputForm;
         private static readonly string fontName = "微软雅黑";
+        private static float dpiScale;
+
         public static string Show(string title, string prompt, bool isPassword)
         {
-            inputForm = new Form
-            {
-                Text = title,
-                Width = 260,
-                Height = 72,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                StartPosition = FormStartPosition.CenterScreen,
-                ShowInTaskbar = false,
-                MinimizeBox = false,
-                MaximizeBox = false
-            };
+            inputForm = new Form();
+            dpiScale = Graphics.FromHwnd(inputForm.Handle).DpiX / 96f;
+            inputForm.Text = title;
+            inputForm.Width = (int)(278 * dpiScale);
+            inputForm.Height = (int)(72 * dpiScale);
+            inputForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            inputForm.AutoScaleMode = AutoScaleMode.Dpi;
+            inputForm.StartPosition = FormStartPosition.CenterScreen;
+            inputForm.ShowInTaskbar = false;
+            inputForm.MinimizeBox = false;
+            inputForm.MaximizeBox = false;
 
             ToolStrip toolStrip = new ToolStrip
             {
-                ImageScalingSize = new Size(20, 20)
+                ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale))
             };
 
             ToolStripLabel promptLabel = new ToolStripLabel(prompt)
@@ -33,6 +35,7 @@ namespace Drawer
 
             ToolStripTextBox inputTextBox = new ToolStripTextBox
             {
+                Width = (int)(120 * dpiScale),
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134)
             };
