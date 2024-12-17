@@ -87,6 +87,7 @@ namespace Drawer
             exportStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             exportStripButton.Click += ExportStripButton_Click;
 
+            searchStripTextBox.Width = (int)(120 * dpiScale);
             searchStripTextBox.BorderStyle = BorderStyle.FixedSingle;
             searchStripTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
 
