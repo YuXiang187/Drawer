@@ -34,6 +34,7 @@ namespace Drawer
         private readonly KeyValueStore store;
         private List<string> list;
         private int foundIndex = 0;
+
         public EditForm()
         {
             dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;

@@ -20,6 +20,7 @@ namespace Drawer
         public static ToolStripMenuItem hotKeyItem;
         public static ToolStripMenuItem floatFormItem;
         public static ToolStripMenuItem pauseItem;
+
         public MainTray()
         {
             store = new KeyValueStore();
