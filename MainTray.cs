@@ -140,7 +140,7 @@ namespace Drawer
         private void IsAutoLaunchItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            string appPath = Path.Combine(Application.StartupPath, "Drawer.exe");
+            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string registryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
             if (menuItem.Checked == true)
