@@ -2,18 +2,16 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Principal;
 using System.Windows.Forms;
-using Microsoft.Win32.TaskScheduler;
-using NHotkey.WindowsForms;
+using Microsoft.Win32;
 
 namespace Drawer
 {
     internal class MainTray
     {
         private readonly KeyValueStore store;
-        private readonly MainForm mainForm;
         private readonly FloatForm floatForm;
+        public readonly MainForm mainForm;
         private EditForm editForm;
 
         public NotifyIcon notifyIcon;
@@ -50,7 +48,7 @@ namespace Drawer
             {
                 case 0:
                     hotKeyItem.Enabled = false;
-                    MainForm.isHotKey = true;
+                    mainForm.EnableHotKey((Keys)Enum.Parse(typeof(Keys), new KeyValueStore().Get("Hotkey")));
                     break;
                 case 1:
                     floatFormItem.Enabled = false;
@@ -92,8 +90,12 @@ namespace Drawer
             Keys key = HotkeyDialog.GetKeys("设置", "更改热键：", store.Get("Hotkey"));
             if (key != Keys.None)
             {
+                if (hotKeyItem.Enabled == false)
+                {
+                    mainForm.DisableHotkey();
+                    mainForm.EnableHotKey(key);
+                }
                 store.Update("Hotkey", key.ToString());
-                HotkeyManager.Current.AddOrReplace("Default", key, mainForm.OnHotKey);
                 MessageBox.Show($"热键已更改为：\n{key}", "更改热键", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -131,51 +133,31 @@ namespace Drawer
         {
             if (e.Button == MouseButtons.Left)
             {
-                Run();
+                mainForm.Run();
             }
         }
 
         private void IsAutoLaunchItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            string appPath = Path.Combine(Application.StartupPath, "Drawer.exe");
+            string registryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
-            string taskName = "Drawer";
             if (menuItem.Checked == true)
             {
-                try
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
                 {
-                    using (TaskService taskService = new TaskService())
-                    {
-                        TaskDefinition taskDefinition = taskService.NewTask();
-                        taskDefinition.Triggers.Add(new LogonTrigger { UserId = WindowsIdentity.GetCurrent().Name });
-                        taskDefinition.Actions.Add(new ExecAction(Path.Combine(Application.StartupPath, "Drawer.exe"), null));
-                        taskDefinition.Principal.RunLevel = TaskRunLevel.LUA;
-                        taskDefinition.Settings.Compatibility = TaskCompatibility.V2_3;
-                        taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
-                    }
-                    store.Update("isAutoLaunch", "true");
+                    key?.SetValue("Drawer", $"\"{appPath}\"");
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    menuItem.Checked = false;
-                }
+                store.Update("isAutoLaunch", "true");
             }
             else
             {
-                try
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
                 {
-                    using (TaskService taskService = new TaskService())
-                    {
-                        taskService.RootFolder.DeleteTask(taskName, false);
-                    }
-                    store.Update("isAutoLaunch", "false");
+                    key?.DeleteValue("Drawer", false);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"创建或删除自动启动任务失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    menuItem.Checked = false;
-                }
+                store.Update("isAutoLaunch", "false");
             }
         }
 
@@ -184,7 +166,7 @@ namespace Drawer
             hotKeyItem.Enabled = false;
             floatFormItem.Enabled = true;
             pauseItem.Enabled = true;
-            MainForm.isHotKey = true;
+            mainForm.EnableHotKey((Keys)Enum.Parse(typeof(Keys), new KeyValueStore().Get("Hotkey")));
             floatForm.Hide();
             store.Update("Mode", "0");
         }
@@ -194,7 +176,7 @@ namespace Drawer
             hotKeyItem.Enabled = true;
             floatFormItem.Enabled = false;
             pauseItem.Enabled = true;
-            MainForm.isHotKey = false;
+            mainForm.DisableHotkey();
             floatForm.Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - floatForm.Width - 22, Screen.PrimaryScreen.WorkingArea.Bottom - floatForm.Height - 16);
             floatForm.Show();
             store.Update("Mode", "1");
@@ -205,7 +187,7 @@ namespace Drawer
             hotKeyItem.Enabled = true;
             floatFormItem.Enabled = true;
             pauseItem.Enabled = false;
-            MainForm.isHotKey = false;
+            mainForm.DisableHotkey();
             floatForm.Hide();
         }
 
@@ -228,11 +210,6 @@ namespace Drawer
         public void FloatFormIcon(bool isRunIcon)
         {
             floatForm.BackgroundImage = isRunIcon == true ? Properties.Resources.run : (Image)Properties.Resources.stop;
-        }
-
-        public void Run()
-        {
-            mainForm.Run();
         }
 
         [STAThread]

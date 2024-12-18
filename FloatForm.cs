@@ -99,7 +99,7 @@ namespace Drawer
             }
             else if (isDragging == false)
             {
-                mainTray.Run();
+                mainTray.mainForm.Run();
             }
         }
 

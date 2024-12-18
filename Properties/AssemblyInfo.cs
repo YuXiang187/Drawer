@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("YuXiang187")]
 [assembly: AssemblyProduct("Drawer")]
-[assembly: AssemblyCopyright("Copyright (C) YuXiang187 2024")]
+[assembly: AssemblyCopyright("Copyright (C) YuXiang187")]
 [assembly: AssemblyTrademark("(C) YuXiang187")]
 [assembly: AssemblyCulture("")]
 

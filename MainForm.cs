@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NHotkey;
-using NHotkey.WindowsForms;
 
 namespace Drawer
 {
     internal class MainForm : Form
     {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
         public bool isRun = false;
-        public static bool isHotKey = false;
         private static readonly string fontName = "微软雅黑";
+        private const int HOTKEY_ID = 187;
         private static float dpiScale;
 
         private readonly StringPool pool;
@@ -25,8 +30,6 @@ namespace Drawer
             dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
             this.mainTray = mainTray;
             pool = new StringPool();
-
-            HotkeyManager.Current.AddOrReplace("Default", (Keys)Enum.Parse(typeof(Keys), new KeyValueStore().Get("Hotkey")), OnHotKey);
 
             Text = "YuXiang Drawer";
             ClientSize = new Size((int)(450 * dpiScale), (int)(250 * dpiScale));
@@ -69,6 +72,34 @@ namespace Drawer
             Controls.Add(progressBar);
         }
 
+        public void EnableHotKey(Keys currentHotkey)
+        {
+            if (currentHotkey != Keys.None)
+            {
+                uint fsModifiers = 0;
+                if ((currentHotkey & Keys.Control) == Keys.Control)
+                {
+                    fsModifiers |= 0x0002;
+                }
+                if ((currentHotkey & Keys.Shift) == Keys.Shift)
+                {
+                    fsModifiers |= 0x0004;
+                }
+                if ((currentHotkey & Keys.Alt) == Keys.Alt)
+                {
+                    fsModifiers |= 0x0001;
+                }
+
+                uint vk = (uint)(currentHotkey & ~Keys.Control & ~Keys.Shift & ~Keys.Alt);
+                RegisterHotKey(Handle, HOTKEY_ID, fsModifiers, vk);
+            }
+        }
+
+        public void DisableHotkey()
+        {
+            UnregisterHotKey(Handle, HOTKEY_ID);
+        }
+
         // set do not appear in Alt+Tab list
         protected override CreateParams CreateParams
         {
@@ -78,6 +109,16 @@ namespace Drawer
                 cp.ExStyle |= 0x80;
                 return cp;
             }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_HOTKEY = 0x0312;
+            if (m.Msg == WM_HOTKEY)
+            {
+                Run();
+            }
+            base.WndProc(ref m);
         }
 
         public async void Run()
@@ -152,15 +193,6 @@ namespace Drawer
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Hide();
-        }
-
-        public void OnHotKey(object sender, HotkeyEventArgs e)
-        {
-            if (isHotKey == true)
-            {
-                Run();
-            }
-            e.Handled = true;
         }
     }
 }
