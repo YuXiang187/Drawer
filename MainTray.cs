@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.Win32;
 
 namespace Drawer
 {
@@ -145,19 +145,35 @@ namespace Drawer
 
             if (menuItem.Checked == true)
             {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
+                try
                 {
-                    key?.SetValue("Drawer", $"\"{appPath}\"");
+                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
+                    {
+                        key?.SetValue("Drawer", $"\"{appPath}\"");
+                    }
+                    store.Update("isAutoLaunch", "true");
                 }
-                store.Update("isAutoLaunch", "true");
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show($"注册表修改失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    menuItem.Checked = false;
+                }
             }
             else
             {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
+                try
                 {
-                    key?.DeleteValue("Drawer", false);
+                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
+                    {
+                        key?.DeleteValue("Drawer", false);
+                    }
+                    store.Update("isAutoLaunch", "false");
                 }
-                store.Update("isAutoLaunch", "false");
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show($"注册表修改失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    menuItem.Checked = false;
+                }
             }
         }
 
