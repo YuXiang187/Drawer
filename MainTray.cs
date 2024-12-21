@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -233,8 +234,18 @@ namespace Drawer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            new MainTray();
-            Application.Run();
+            using (Mutex mutex = new Mutex(true, "Drawer", out bool createdNew))
+            {
+                if (createdNew)
+                {
+                    new MainTray();
+                    Application.Run();
+                }
+                else
+                {
+                    MessageBox.Show("软件已经在运行！", "YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
