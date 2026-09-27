@@ -69,9 +69,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ;TODO: origin exe file
 Source: "C:\Users\yuxia\Desktop\release\Drawer_4.1_x64\Drawer.exe"; DestDir: "{app}"; Flags: ignoreversion
 
-[Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Drawer"; ValueData: ""; Flags: uninsdeletevalue
-
 [Icons]
 Name: "{autoprograms}\YuXiang Drawer"; Filename: "{app}\Drawer.exe"
 Name: "{autodesktop}\YuXiang Drawer"; Filename: "{app}\Drawer.exe"; Tasks: desktopicon
@@ -84,6 +81,11 @@ procedure CurUninstallStepChanged(UninstallStep: TUninstallStep);
 begin
   if UninstallStep = usPostUninstall then
   begin
+    RegDeleteValue(
+      HKEY_CURRENT_USER,
+      'Software\Microsoft\Windows\CurrentVersion\Run',
+      'Drawer'
+    );
     if FileExists(ExpandConstant('{app}\Drawer.config')) then
     begin
       if MsgBox(
