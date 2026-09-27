@@ -34,23 +34,40 @@ namespace Drawer
 
         public string Decrypt(string cipherText)
         {
-            using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
+            if (string.IsNullOrEmpty(cipherText))
             {
-                aesAlg.Key = Encoding.UTF8.GetBytes(key);
-                aesAlg.Mode = CipherMode.ECB;
-
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream msDecrypt = new MemoryStream(Convert.FromBase64String(cipherText)))
+                return string.Empty;
+            }
+            try
+            {
+                using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    aesAlg.Key = Encoding.UTF8.GetBytes(key);
+                    aesAlg.Mode = CipherMode.ECB;
+
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                    using (MemoryStream msDecrypt = new MemoryStream(Convert.FromBase64String(cipherText)))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                         {
-                            return srDecrypt.ReadToEnd();
+                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                return srDecrypt.ReadToEnd();
+                            }
                         }
                     }
                 }
+            }
+            catch (FormatException)
+            {
+                // invalid Base64 string
+                return string.Empty;
+            }
+            catch (CryptographicException)
+            {
+                // corrupted or tampered cipher text
+                return string.Empty;
             }
         }
     }

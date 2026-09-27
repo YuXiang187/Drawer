@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -31,7 +32,11 @@ namespace Drawer
             Size = new Size((int)(38 * dpiScale), (int)(38 * dpiScale));
             AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
-            Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - Width - (int)(28 * dpiScale), Screen.PrimaryScreen.WorkingArea.Bottom - Height - (int)(16 * dpiScale));
+            Screen screen = Screen.PrimaryScreen ?? Screen.AllScreens.FirstOrDefault();
+            if (screen != null)
+            {
+                Location = new Point(screen.WorkingArea.Right - Width - (int)(28 * dpiScale), screen.WorkingArea.Bottom - Height - (int)(16 * dpiScale));
+            }
             ResumeLayout(false);
 
             // MouseMenu

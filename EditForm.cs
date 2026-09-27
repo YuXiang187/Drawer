@@ -197,8 +197,12 @@ namespace Drawer
             ResumeLayout(false);
 
             // set location in center
-            Rectangle screenArea = Screen.AllScreens.FirstOrDefault(s => s.Primary).WorkingArea;
-            Location = new Point((screenArea.Width - Width) / 2, (screenArea.Height - Height) / 2);
+            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
+            if (screen != null)
+            {
+                Rectangle screenArea = screen.WorkingArea;
+                Location = new Point(screenArea.Left + (screenArea.Width - Width) / 2, screenArea.Top + (screenArea.Height - Height) / 2);
+            }
 
             textBox.Text = string.Join(",", StringPool.initPool);
         }

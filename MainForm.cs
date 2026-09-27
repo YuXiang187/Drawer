@@ -44,8 +44,12 @@ namespace Drawer
             ResumeLayout(false);
 
             // set location in center
-            Rectangle screenArea = Screen.AllScreens.FirstOrDefault(s => s.Primary).WorkingArea;
-            Location = new Point((screenArea.Width - Width) / 2, (screenArea.Height - Height) / 2);
+            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
+            if (screen != null)
+            {
+                Rectangle screenArea = screen.WorkingArea;
+                Location = new Point(screenArea.Left + (screenArea.Width - Width) / 2, screenArea.Top + (screenArea.Height - Height) / 2);
+            }
 
             mainLabel = new Label
             {
@@ -130,10 +134,15 @@ namespace Drawer
                 mainLabel.ForeColor = Color.Gray;
                 mainTray.notifyIcon.Icon = Properties.Resources.tray_stop;
                 mainTray.FloatFormIcon(false);
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i < 8 && !IsDisposed; i++)
                 {
                     mainLabel.Text = i == 7 ? pool.Draw() : pool.Get();
                     await Task.Delay(60);
+                }
+                if (IsDisposed)
+                {
+                    // form was destroyed while animating (e.g. app is exiting)
+                    return;
                 }
                 mainLabel.ForeColor = Color.Black;
                 pool.Save();
@@ -146,7 +155,7 @@ namespace Drawer
 
         private async void UnVisible()
         {
-            for (int i = 100; i >= 0; i--)
+            for (int i = 100; i >= 0 && !IsDisposed; i--)
             {
                 progressBar.Value = i;
                 if (isRun)

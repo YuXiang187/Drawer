@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -10,32 +12,67 @@ namespace Drawer
 
         public void Add(string key, string value)
         {
-            File.AppendAllText(dataFile, $"{key}:{value}\n");
+            try
+            {
+                File.AppendAllText(dataFile, $"{key}:{value}\n");
+            }
+            catch (IOException)
+            {
+                // config file unavailable (deleted, locked or read-only): degrade silently instead of crashing
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
         }
 
         public void Update(string key, string value)
         {
-            System.Collections.Generic.List<string> lines = File.ReadAllLines(dataFile).ToList();
-            for (int i = 0; i < lines.Count; i++)
+            try
             {
-                if (lines[i].StartsWith(key + ":"))
+                List<string> lines = File.Exists(dataFile) ? File.ReadAllLines(dataFile).ToList() : new List<string>();
+                bool found = false;
+                for (int i = 0; i < lines.Count; i++)
                 {
-                    lines[i] = $"{key}:{value}";
-                    break;
+                    if (lines[i].StartsWith(key + ":"))
+                    {
+                        lines[i] = $"{key}:{value}";
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found)
+                {
+                    // append missing keys so an incomplete config can self-heal
+                    lines.Add($"{key}:{value}");
+                }
+                File.WriteAllLines(dataFile, lines);
             }
-            File.WriteAllLines(dataFile, lines);
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
         }
 
         public string Get(string key)
         {
-            string[] lines = File.ReadAllLines(dataFile);
-            foreach (string line in lines)
+            try
             {
-                if (line.StartsWith(key + ":"))
+                string[] lines = File.ReadAllLines(dataFile);
+                foreach (string line in lines)
                 {
-                    return line.Substring(key.Length + 1);
+                    if (line.StartsWith(key + ":"))
+                    {
+                        return line.Substring(key.Length + 1);
+                    }
                 }
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
             }
             return null;
         }
