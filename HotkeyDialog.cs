@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -13,6 +13,7 @@ namespace Drawer
 
         public static Keys GetKeys(string title, string prompt, string boxText)
         {
+            hotkey = Keys.None;
             hotkeyForm = new Form();
             dpiScale = Graphics.FromHwnd(hotkeyForm.Handle).DpiX / 96f;
             hotkeyForm.Text = title;

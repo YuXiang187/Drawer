@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
 using System.Drawing;
 using System.IO;
@@ -210,7 +210,7 @@ namespace Drawer
 
         private void AboutItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.1\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。\n\n软件支持设置背景图片，请将图片放于本软件的根目录下。\n图片大小推荐为450x250（9:5），名称为以下的任意一种：\n- background.jpg\n- background.jpeg\n- background.png\n- background.bmp", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.1\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CountItem_Click(object sender, EventArgs e)

@@ -373,6 +373,11 @@ namespace Drawer
 
             if (!string.IsNullOrEmpty(searchText))
             {
+                if (foundIndex > textBox.Text.Length)
+                {
+                    foundIndex = 0;
+                }
+
                 int index = textBox.Text.IndexOf(searchText, foundIndex, StringComparison.OrdinalIgnoreCase);
 
                 if (!textBox.Focused)
