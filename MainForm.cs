@@ -133,11 +133,10 @@ namespace Drawer
                 mainTray.FloatFormIcon(false);
                 for (int i = 0; i < 8; i++)
                 {
-                    mainLabel.Text = pool.Get();
+                    mainLabel.Text = i == 7 ? pool.Draw() : pool.Get();
                     await Task.Delay(60);
                 }
                 mainLabel.ForeColor = Color.Black;
-                pool.Remove(mainLabel.Text);
                 pool.Save();
                 mainTray.notifyIcon.Icon = Properties.Resources.tray_run;
                 mainTray.FloatFormIcon(true);

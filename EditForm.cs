@@ -465,10 +465,9 @@ namespace Drawer
             if (textBox.Text.Length > 0)
             {
                 list.RemoveAll(s => string.IsNullOrEmpty(s));
-                StringPool.initPool = new List<string>(list);
-                StringPool.pool = new List<string>(list);
-                store.Update("initPool", es.Encrypt(string.Join(",", list)));
-                store.Update("pool", es.Encrypt(string.Join(",", list)));
+                StringPool.SetNames(list);
+                store.Update("initPool", es.Encrypt(string.Join(",", StringPool.initPool)));
+                store.Update("pool", es.Encrypt(string.Join(",", StringPool.pool)));
                 Dispose();
 
                 MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
