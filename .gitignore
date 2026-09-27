@@ -1,0 +1,6 @@
+# Visual Studio cache / user config
+.vs/
+
+# build output
+bin/
+obj/
