@@ -35,7 +35,6 @@ namespace Drawer
             ClientSize = new Size((int)(450 * dpiScale), (int)(250 * dpiScale));
             TopMost = true;
             ControlBox = false;
-            Load += MainForm_Load;
             FormBorderStyle = FormBorderStyle.None;
             AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
@@ -163,30 +162,10 @@ namespace Drawer
             }
         }
 
-        // set background image white mask
+        // draw form border
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(178, SystemColors.Control)))
-            {
-                e.Graphics.FillRectangle(brush, ClientRectangle);
-            }
             ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Color.DarkGray, ButtonBorderStyle.Solid);
-        }
-
-        // set background image
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            string[] imageExtensions = { "png", "jpg", "jpeg", "bmp" };
-            foreach (string extension in imageExtensions)
-            {
-                string imagePath = System.IO.Path.Combine(Application.StartupPath, $"background.{extension}");
-                if (System.IO.File.Exists(imagePath))
-                {
-                    BackgroundImage = Image.FromFile(imagePath);
-                    BackgroundImageLayout = ImageLayout.Zoom;
-                    break;
-                }
-            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
