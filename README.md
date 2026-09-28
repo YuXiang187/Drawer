@@ -34,7 +34,7 @@ Inno setup 7 配置文件：
 
 ```ini
 [Setup]
-AppId={{077D241B-A81D-40B0-BC78-CF0B17B6A4A4}
+AppId={{61CD1A78-4BF1-4B0A-83B2-63F7385E7E86}
 AppName=YuXiang Drawer
 AppVersion=4.1
 AppPublisher=YuXiang187
@@ -57,7 +57,7 @@ OutputBaseFilename=Drawer_4.1_x64_setup
 ;TODO: icon file path
 SetupIconFile=C:\Users\yuxia\Desktop\files\icon.ico
 SolidCompression=yes
-WizardStyle=modern dynamic
+WizardStyle=modern light
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
