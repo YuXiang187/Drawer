@@ -16,14 +16,13 @@ namespace Drawer
             { "isAutoLaunch", "false" },
             { "Hotkey", "F8" },
             { "Key", "Yw5eKi//NQgt69jux/1HfQ==" },
-            { "initPool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=" },
-            { "pool", "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=" },
         };
 
         private readonly KeyValueStore store;
         private readonly FloatForm floatForm;
         public readonly MainForm mainForm;
         private EditForm editForm;
+        private readonly ToolStripMenuItem groupMenuItem;
 
         public NotifyIcon notifyIcon;
         public static ToolStripMenuItem hotKeyItem;
@@ -85,6 +84,8 @@ namespace Drawer
             };
             isAutoLaunchItem.Click += IsAutoLaunchItem_Click;
 
+            groupMenuItem = new ToolStripMenuItem("分组");
+
             contextMenuStrip.Items.Add(hotKeyItem);
             contextMenuStrip.Items.Add(floatFormItem);
             contextMenuStrip.Items.Add(pauseItem);
@@ -92,10 +93,12 @@ namespace Drawer
             contextMenuStrip.Items.Add(isAutoLaunchItem);
             contextMenuStrip.Items.Add("设置", null, SettingItem_Click);
             contextMenuStrip.Items.Add("编辑", null, EditItem_Click);
+            contextMenuStrip.Items.Add(groupMenuItem);
             contextMenuStrip.Items.Add("统计", null, CountItem_Click);
             contextMenuStrip.Items.Add("关于", null, AboutItem_Click);
             contextMenuStrip.Items.Add(new ToolStripSeparator());
             contextMenuStrip.Items.Add("退出", null, ExitItem_Click);
+            contextMenuStrip.Opening += ContextMenuStrip_Opening;
 
             notifyIcon = new NotifyIcon
             {
@@ -149,6 +152,39 @@ namespace Drawer
                     MessageBox.Show("密码错误。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void ContextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            RebuildGroupMenu();
+        }
+
+        private void RebuildGroupMenu()
+        {
+            groupMenuItem.DropDownItems.Clear();
+            string active = GroupStore.GetActiveGroupId();
+            foreach (string id in GroupStore.GetGroupIds())
+            {
+                ToolStripMenuItem item = new ToolStripMenuItem(GroupStore.GetGroupName(id))
+                {
+                    Checked = id == active,
+                    Tag = id
+                };
+                item.Click += GroupMenuItem_Click;
+                groupMenuItem.DropDownItems.Add(item);
+            }
+        }
+
+        private void GroupMenuItem_Click(object sender, EventArgs e)
+        {
+            string id = (string)((ToolStripMenuItem)sender).Tag;
+            if (id == GroupStore.GetActiveGroupId())
+            {
+                return;
+            }
+            GroupStore.SetActiveGroup(id);
+            // reload the pools so the next draw uses the newly selected group
+            new StringPool();
         }
 
         private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
@@ -253,12 +289,12 @@ namespace Drawer
 
         private void AboutItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.1\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("YuXiang Drawer：名称随机抽取器\n\n版本 4.2\n作者 YuXiang187\n\n“编辑”功能的初始密码为123456。", "关于 YuXiang Drawer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"统计结果如下。\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(GroupStore.GetActiveGroupId())}\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)

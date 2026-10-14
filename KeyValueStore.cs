@@ -55,6 +55,26 @@ namespace Drawer
             }
         }
 
+        public void Delete(string key)
+        {
+            try
+            {
+                if (!File.Exists(dataFile))
+                {
+                    return;
+                }
+                List<string> lines = File.ReadAllLines(dataFile).ToList();
+                lines.RemoveAll(line => line.StartsWith(key + ":"));
+                File.WriteAllLines(dataFile, lines);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
         public string Get(string key)
         {
             try

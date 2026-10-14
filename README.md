@@ -36,7 +36,7 @@ Inno setup 7 配置文件：
 [Setup]
 AppId={{61CD1A78-4BF1-4B0A-83B2-63F7385E7E86}
 AppName=YuXiang Drawer
-AppVersion=4.1
+AppVersion=4.2
 AppPublisher=YuXiang187
 DefaultDirName={autopf}\Drawer
 UninstallDisplayIcon={app}\Drawer.exe
@@ -53,7 +53,7 @@ CloseApplications=yes
 ;TODO: output dir
 OutputDir=C:\Users\yuxia\Desktop\inno
 ;TODO: output filename
-OutputBaseFilename=Drawer_4.1_x64_setup
+OutputBaseFilename=Drawer_4.2_x64_setup
 ;TODO: icon file path
 SetupIconFile=C:\Users\yuxia\Desktop\files\icon.ico
 SolidCompression=yes
@@ -67,7 +67,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ;TODO: origin exe file
-Source: "C:\Users\yuxia\Desktop\release\Drawer_4.1_x64\Drawer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\yuxia\Desktop\release\Drawer_4.2_x64\Drawer.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\YuXiang Drawer"; Filename: "{app}\Drawer.exe"
@@ -105,7 +105,12 @@ end;
 
 ## 更新日志
 
-**4.1版本**（最新）：
+**4.2版本**（最新）：
+
+* 修复了一些Bug
+* 添加名单分组功能：系统托盘菜单切换分组，编辑页面添加、重命名、删除分组
+
+**4.1版本**：
 
 * 修复了一些Bug
 * 抽取算法从不放回抽样改为高斯分布抽样

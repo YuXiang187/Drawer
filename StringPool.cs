@@ -8,8 +8,6 @@ namespace Drawer
     {
         private const double StddevScalingFactor = 3.0;
 
-        private readonly KeyValueStore store;
-        private readonly EncryptString es;
         private readonly Random random;
 
         public static List<string> initPool = new List<string>();
@@ -18,22 +16,11 @@ namespace Drawer
 
         public StringPool()
         {
-            store = new KeyValueStore();
-            es = new EncryptString();
             random = new Random();
 
-            List<string> loadedInitPool = SplitNames(es.Decrypt(store.Get("initPool") ?? ""));
-            List<string> loadedPool = SplitNames(es.Decrypt(store.Get("pool") ?? ""));
-            SetState(loadedInitPool, loadedPool);
-        }
-
-        private static List<string> SplitNames(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return new List<string>();
-            }
-            return value.Split(',').Where(s => !string.IsNullOrEmpty(s)).ToList();
+            // the static pools always mirror the active group
+            string id = GroupStore.GetActiveGroupId();
+            SetState(GroupStore.GetInit(id), GroupStore.GetPool(id));
         }
 
         public static void SetNames(List<string> names)
@@ -96,33 +83,39 @@ namespace Drawer
 
         public void Save()
         {
-            store.Update("pool", es.Encrypt(string.Join(",", pool)));
+            GroupStore.SetPool(GroupStore.GetActiveGroupId(), pool);
         }
 
         private static void SyncPool()
         {
+            pool = BuildSyncedPool(initPool, pool);
+        }
+
+        // keeps the draw history order of the names that are still listed, appends new names first
+        internal static List<string> BuildSyncedPool(List<string> init, List<string> history)
+        {
             Dictionary<string, int> required = new Dictionary<string, int>();
-            foreach (string name in initPool)
+            foreach (string name in init)
             {
                 required[name] = required.TryGetValue(name, out int count) ? count + 1 : 1;
             }
 
-            List<string> history = new List<string>();
+            List<string> keptHistory = new List<string>();
             Dictionary<string, int> kept = new Dictionary<string, int>();
-            foreach (string name in pool)
+            foreach (string name in history)
             {
                 int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
                 int requiredCount = required.TryGetValue(name, out int r) ? r : 0;
                 if (keptCount < requiredCount)
                 {
-                    history.Add(name);
+                    keptHistory.Add(name);
                     kept[name] = keptCount + 1;
                 }
             }
 
             List<string> fresh = new List<string>();
             Dictionary<string, int> added = new Dictionary<string, int>();
-            foreach (string name in initPool)
+            foreach (string name in init)
             {
                 int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
                 int addedCount = added.TryGetValue(name, out int a) ? a : 0;
@@ -134,8 +127,9 @@ namespace Drawer
                 }
             }
 
-            pool = new List<string>(fresh);
-            pool.AddRange(history);
+            List<string> merged = new List<string>(fresh);
+            merged.AddRange(keptHistory);
+            return merged;
         }
 
         private double NextGaussian(double mean, double stddev)
