@@ -9,7 +9,7 @@ namespace Drawer
         private static readonly string fontName = "微软雅黑";
         private static float dpiScale;
 
-        public static string Show(string title, string prompt, bool isPassword, string initialText = null)
+        public static string Show(string title, string prompt, bool isPassword, string initialText = null, int maxLength = 0)
         {
             inputForm = new Form();
             dpiScale = Graphics.FromHwnd(inputForm.Handle).DpiX / 96f;
@@ -40,6 +40,10 @@ namespace Drawer
                 Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134)
             };
             inputTextBox.TextBox.UseSystemPasswordChar = isPassword;
+            if (maxLength > 0)
+            {
+                inputTextBox.MaxLength = maxLength;
+            }
             if (initialText != null)
             {
                 inputTextBox.Text = initialText;

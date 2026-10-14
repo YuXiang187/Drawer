@@ -33,7 +33,7 @@ namespace Drawer
                 bool found = false;
                 for (int i = 0; i < lines.Count; i++)
                 {
-                    if (lines[i].StartsWith(key + ":"))
+                    if (MatchesKey(lines[i], key))
                     {
                         lines[i] = $"{key}:{value}";
                         found = true;
@@ -64,7 +64,7 @@ namespace Drawer
                     return;
                 }
                 List<string> lines = File.ReadAllLines(dataFile).ToList();
-                lines.RemoveAll(line => line.StartsWith(key + ":"));
+                lines.RemoveAll(line => MatchesKey(line, key));
                 File.WriteAllLines(dataFile, lines);
             }
             catch (IOException)
@@ -75,6 +75,16 @@ namespace Drawer
             }
         }
 
+        private static bool MatchesKey(string line, string key)
+        {
+            if (!line.StartsWith(key + ":"))
+            {
+                return false;
+            }
+            int separatorIndex = line.IndexOf(':');
+            return separatorIndex == key.Length;
+        }
+
         public string Get(string key)
         {
             try
@@ -82,7 +92,7 @@ namespace Drawer
                 string[] lines = File.ReadAllLines(dataFile);
                 foreach (string line in lines)
                 {
-                    if (line.StartsWith(key + ":"))
+                    if (MatchesKey(line, key))
                     {
                         return line.Substring(key.Length + 1);
                     }

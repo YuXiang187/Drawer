@@ -148,7 +148,8 @@ namespace Drawer
             cancelStripButton,
             applyStripButton});
 
-            groupComboBox.Width = (int)(140 * dpiScale);
+            groupComboBox.AutoSize = false;
+            groupComboBox.Width = (int)(200 * dpiScale);
             groupComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             groupComboBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             groupComboBox.ComboBox.SelectionChangeCommitted += GroupComboBox_SelectionChangeCommitted;
@@ -168,9 +169,15 @@ namespace Drawer
             groupDeleteButton.ToolTipText = "删除分组";
             groupDeleteButton.Click += GroupDeleteButton_Click;
 
+            ToolStripLabel groupStripLabel = new ToolStripLabel("分组")
+            {
+                Image = Properties.Resources.group,
+                TextImageRelation = TextImageRelation.ImageAboveText
+            };
+
             groupToolStrip.ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale));
             groupToolStrip.Items.AddRange(new ToolStripItem[] {
-            new ToolStripLabel("分组"),
+            groupStripLabel,
             groupComboBox,
             groupAddButton,
             groupRenameButton,
@@ -180,7 +187,7 @@ namespace Drawer
             listBox.BorderStyle = BorderStyle.FixedSingle;
             listBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             listBox.ItemHeight = 27;
-            listBox.Location = new Point((int)(12 * dpiScale), (int)(78 * dpiScale));
+            listBox.Location = new Point((int)(12 * dpiScale), (int)(91 * dpiScale));
             listBox.ScrollAlwaysVisible = true;
             listBox.SelectionMode = SelectionMode.MultiExtended;
             listBox.Size = new Size((int)(236 * dpiScale), (int)(353 * dpiScale));
@@ -190,7 +197,7 @@ namespace Drawer
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
             textBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            textBox.Location = new Point((int)(254 * dpiScale), (int)(78 * dpiScale));
+            textBox.Location = new Point((int)(254 * dpiScale), (int)(91 * dpiScale));
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
             textBox.Size = new Size((int)(516 * dpiScale), (int)(314 * dpiScale));
@@ -200,14 +207,14 @@ namespace Drawer
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
             addTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            addTextBox.Location = new Point((int)(254 * dpiScale), (int)(400 * dpiScale));
+            addTextBox.Location = new Point((int)(254 * dpiScale), (int)(413 * dpiScale));
             addTextBox.Size = new Size((int)(436 * dpiScale), (int)(34 * dpiScale));
             addTextBox.KeyDown += AddTextBox_KeyDown;
 
             addButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             addButton.BackgroundImage = Properties.Resources.add;
             addButton.BackgroundImageLayout = ImageLayout.Zoom;
-            addButton.Location = new Point((int)(696 * dpiScale), (int)(398 * dpiScale));
+            addButton.Location = new Point((int)(696 * dpiScale), (int)(411 * dpiScale));
             addButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             addButton.UseVisualStyleBackColor = true;
             addButton.Click += AddButton_Click;
@@ -215,13 +222,13 @@ namespace Drawer
             removeButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             removeButton.BackgroundImage = Properties.Resources.remove;
             removeButton.BackgroundImageLayout = ImageLayout.Zoom;
-            removeButton.Location = new Point((int)(736 * dpiScale), (int)(398 * dpiScale));
+            removeButton.Location = new Point((int)(736 * dpiScale), (int)(411 * dpiScale));
             removeButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             removeButton.UseVisualStyleBackColor = true;
             removeButton.Click += RemoveButton_Click;
 
             Text = "YuXiang Drawer";
-            ClientSize = new Size((int)(782 * dpiScale), (int)(461 * dpiScale));
+            ClientSize = new Size((int)(782 * dpiScale), (int)(474 * dpiScale));
             Controls.Add(statusStrip);
             Controls.Add(groupToolStrip);
             Controls.Add(toolStrip);
@@ -231,7 +238,7 @@ namespace Drawer
             Controls.Add(listBox);
             Controls.Add(addTextBox);
             Icon = Properties.Resources.tray_run;
-            MinimumSize = new Size((int)(600 * dpiScale), (int)(428 * dpiScale));
+            MinimumSize = new Size((int)(600 * dpiScale), (int)(441 * dpiScale));
             AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
             FormClosing += MainForm_FormClosing;
@@ -466,12 +473,12 @@ namespace Drawer
             EncryptString es = new EncryptString();
 
             string currectKey = es.Decrypt(store.Get("Key"));
-            string key = InputDialog.Show("更改密码", "原密码：", true);
+            string key = InputDialog.Show("更改密码", "原密码：", true, null, 20);
             if (key != null)
             {
                 if (key == currectKey)
                 {
-                    string changeKey = InputDialog.Show("更改密码", "新密码：", false);
+                    string changeKey = InputDialog.Show("更改密码", "新密码：", false, null, 20);
                     if (!string.IsNullOrEmpty(changeKey))
                     {
                         store.Update("Key", es.Encrypt(changeKey));
@@ -514,12 +521,16 @@ namespace Drawer
         {
             if (string.IsNullOrEmpty(groupId))
             {
-                return;
+                groupId = GroupStore.GetActiveGroupId();
+            }
+            if (string.IsNullOrEmpty(groupId))
+            {
+                groupId = GroupStore.AddGroup(GroupStore.DefaultGroupName);
             }
             currentGroupId = groupId;
             loadedContent = string.Join(",", GroupStore.GetInit(groupId));
             textBox.Text = loadedContent;
-            Text = $"YuXiang Drawer（{GroupStore.GetGroupName(groupId)}）";
+            Text = $"YuXiang Drawer - {GroupStore.GetGroupName(groupId)}";
             RefreshGroupComboBox();
         }
 
@@ -604,26 +615,43 @@ namespace Drawer
 
         private void GroupAddButton_Click(object sender, EventArgs e)
         {
-            WithDiscardConfirmation(() =>
+            string name = InputDialog.Show("添加分组", "组名：", false, null, 30);
+            if (name == null)
             {
-                string name = InputDialog.Show("添加分组", "组名：", false);
-                if (name == null)
+                return;
+            }
+            name = name.Trim();
+            if (!ValidateGroupName(name, null))
+            {
+                return;
+            }
+
+            if (IsListModified())
+            {
+                string currentName = GroupStore.GetGroupName(currentGroupId);
+                DialogResult result = MessageBox.Show(
+                    $"是否保存对“{currentName}”的修改并切换到新分组？",
+                    "添加分组",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+                if (result == DialogResult.Cancel)
                 {
                     return;
                 }
-                name = name.Trim();
-                if (!ValidateGroupName(name, null))
+                if (result == DialogResult.Yes)
                 {
-                    return;
+                    list.RemoveAll(s => string.IsNullOrEmpty(s));
+                    GroupStore.SetInit(currentGroupId, list);
                 }
-                LoadGroup(GroupStore.AddGroup(name));
-            });
+            }
+
+            LoadGroup(GroupStore.AddGroup(name));
         }
 
         private void GroupRenameButton_Click(object sender, EventArgs e)
         {
             string currentName = GroupStore.GetGroupName(currentGroupId);
-            string name = InputDialog.Show("重命名分组", "新组名：", false, currentName);
+            string name = InputDialog.Show("重命名分组", "新组名：", false, currentName, 30);
             if (name == null)
             {
                 return;

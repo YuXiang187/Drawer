@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Drawer
 {
@@ -21,12 +20,6 @@ namespace Drawer
             // the static pools always mirror the active group
             string id = GroupStore.GetActiveGroupId();
             SetState(GroupStore.GetInit(id), GroupStore.GetPool(id));
-        }
-
-        public static void SetNames(List<string> names)
-        {
-            initPool = new List<string>(names);
-            SyncPool();
         }
 
         public static void SetState(List<string> init, List<string> history)

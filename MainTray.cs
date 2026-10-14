@@ -128,7 +128,7 @@ namespace Drawer
         private void EditItem_Click(object sender, EventArgs e)
         {
             string currectKey = new EncryptString().Decrypt(store.Get("Key"));
-            string key = InputDialog.Show("编辑", "密码：", true);
+            string key = InputDialog.Show("编辑", "密码：", true, null, 20);
             if (key != null)
             {
                 if (key == currectKey)
