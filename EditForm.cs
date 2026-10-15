@@ -696,9 +696,8 @@ namespace Drawer
                 GroupStore.SetInit(currentGroupId, list);
                 GroupStore.SetActiveGroup(currentGroupId);
                 new StringPool();
+                MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(currentGroupId)}\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Dispose();
-
-                MessageBox.Show($"统计结果如下。\n\n当前分组：{GroupStore.GetGroupName(currentGroupId)}\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {

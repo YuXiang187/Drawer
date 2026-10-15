@@ -71,7 +71,10 @@ namespace Drawer
 
             inputForm.Controls.Add(toolStrip);
 
-            return inputForm.ShowDialog() == DialogResult.OK ? inputTextBox.Text : null;
+            DialogResult dialogResult = inputForm.ShowDialog();
+            string inputText = dialogResult == DialogResult.OK ? inputTextBox.Text : null;
+            inputForm.Dispose();
+            return inputText;
         }
 
         private static void InputTextBox_KeyDown(object sender, KeyEventArgs e)
