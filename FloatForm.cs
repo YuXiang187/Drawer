@@ -27,7 +27,6 @@ namespace Drawer
             MouseUp += FloatForm_MouseUp;
             MouseClick += FloatForm_MouseClick;
             StartPosition = FormStartPosition.Manual;
-            ResumeLayout(false);
 
             // MouseMenu
             ToolStripMenuItem moveItem = new ToolStripMenuItem("移动");

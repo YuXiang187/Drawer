@@ -290,13 +290,9 @@ namespace Drawer
 
         private void EditForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing)
+            if (e.CloseReason == CloseReason.UserClosing && !ConfirmDiscard())
             {
-                DialogResult result = MessageBox.Show("是否丢弃所有内容？", "退出", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.No)
-                {
-                    e.Cancel = true;
-                }
+                e.Cancel = true;
             }
         }
 
@@ -311,10 +307,6 @@ namespace Drawer
                     addTextBox.Text = "";
                     textBox.SelectionStart = textBox.Text.Length;
                     textBox.ScrollToCaret();
-                    if (textBox.Text.StartsWith(","))
-                    {
-                        textBox.Text = textBox.Text.Substring(1);
-                    }
                 }
                 else
                 {
@@ -530,15 +522,7 @@ namespace Drawer
 
         private void CancelStripButton_Click(object sender, EventArgs e)
         {
-            if (textBox.Text.Length > 0)
-            {
-                DialogResult result = MessageBox.Show("是否丢弃所有内容？", "退出", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes)
-                {
-                    Dispose();
-                }
-            }
-            else
+            if (textBox.Text.Length == 0 || ConfirmDiscard())
             {
                 Dispose();
             }
@@ -603,6 +587,11 @@ namespace Drawer
         private bool IsListModified()
         {
             return textBox.Text != loadedContent;
+        }
+
+        private bool ConfirmDiscard()
+        {
+            return MessageBox.Show("是否丢弃所有内容？", "退出", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
         }
 
         private void WithDiscardConfirmation(Action action)

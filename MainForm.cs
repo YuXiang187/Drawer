@@ -44,7 +44,6 @@ namespace Drawer
             ShowInTaskbar = false;
             Paint += MainForm_Paint;
             FormClosing += MainForm_FormClosing;
-            ResumeLayout(false);
 
             mainLabel = new Label
             {
