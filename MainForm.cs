@@ -18,6 +18,10 @@ namespace Drawer
         public bool isRun = false;
         private static readonly string fontName = "微软雅黑";
         private const int HOTKEY_ID = 187;
+        private const int MarginX = 12;
+        private const int BaseWidth = 450;
+        private const float FontSize = 60F;
+        private const float MinFontSize = 10F;
         private static float dpiScale;
 
         private readonly StringPool pool;
@@ -32,7 +36,7 @@ namespace Drawer
             pool = new StringPool();
 
             Text = "YuXiang Drawer";
-            ClientSize = new Size((int)(450 * dpiScale), (int)(250 * dpiScale));
+            ClientSize = new Size((int)(BaseWidth * dpiScale), (int)(250 * dpiScale));
             TopMost = true;
             ControlBox = false;
             FormBorderStyle = FormBorderStyle.None;
@@ -56,7 +60,7 @@ namespace Drawer
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
-                Font = new Font(fontName, 60F, FontStyle.Bold, GraphicsUnit.Point, 134),
+                Font = new Font(fontName, FontSize, FontStyle.Bold, GraphicsUnit.Point, 134),
                 Location = new Point((int)(12 * dpiScale), (int)(49 * dpiScale)),
                 Size = new Size((int)(426 * dpiScale), (int)(153 * dpiScale)),
                 Text = "LABEL",
@@ -128,6 +132,7 @@ namespace Drawer
         {
             if (isRun == false)
             {
+                FitToNames();
                 Show();
                 isRun = true;
                 progressBar.Value = 100;
@@ -150,6 +155,46 @@ namespace Drawer
                 mainTray.FloatFormIcon(true);
                 isRun = false;
                 UnVisible();
+            }
+        }
+
+        // form width adapt the label text
+        private void FitToNames()
+        {
+            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
+            int margin = (int)(MarginX * dpiScale);
+            int limit = screen != null ? screen.WorkingArea.Width - margin * 2 : (int)(426 * dpiScale);
+
+            float size = FontSize;
+            int required = WidestName(size);
+            while (required > limit && size > MinFontSize)
+            {
+                size = Math.Max(MinFontSize, size * limit / required);
+                required = WidestName(size);
+            }
+
+            if (Math.Abs(size - mainLabel.Font.Size) > 0.1F)
+            {
+                mainLabel.Font = new Font(fontName, size, FontStyle.Bold, GraphicsUnit.Point, 134);
+            }
+
+            int centerX = Location.X + ClientSize.Width / 2;
+            int width = Math.Max((int)(BaseWidth * dpiScale), required + margin * 2);
+            ClientSize = new Size(screen != null ? Math.Min(width, screen.WorkingArea.Width) : width, ClientSize.Height);
+            Location = new Point(centerX - ClientSize.Width / 2, Location.Y);
+        }
+
+        // width requested for the widest name
+        private static int WidestName(float size)
+        {
+            using (Font probe = new Font(fontName, size, FontStyle.Bold, GraphicsUnit.Point, 134))
+            {
+                int widest = 0;
+                foreach (string name in StringPool.initPool)
+                {
+                    widest = Math.Max(widest, TextRenderer.MeasureText(name, probe).Width);
+                }
+                return widest;
             }
         }
 
