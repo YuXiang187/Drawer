@@ -2,7 +2,6 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -20,15 +19,15 @@ namespace Drawer
 
         private readonly KeyValueStore store;
         private readonly FloatForm floatForm;
-        public readonly MainForm mainForm;
+        internal readonly MainForm mainForm;
         private EditForm editForm;
         private bool editing;
         private readonly ToolStripMenuItem groupMenuItem;
+        private readonly ToolStripMenuItem hotKeyItem;
+        private readonly ToolStripMenuItem floatFormItem;
+        private readonly ToolStripMenuItem pauseItem;
 
-        public NotifyIcon notifyIcon;
-        public static ToolStripMenuItem hotKeyItem;
-        public static ToolStripMenuItem floatFormItem;
-        public static ToolStripMenuItem pauseItem;
+        internal NotifyIcon notifyIcon;
 
         public MainTray()
         {
@@ -48,11 +47,11 @@ namespace Drawer
 
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
             hotKeyItem = new ToolStripMenuItem("热键");
-            hotKeyItem.Click += HotKeyItem_Click;
+            hotKeyItem.Click += (sender, e) => SwitchToHotkeyMode();
             floatFormItem = new ToolStripMenuItem("浮窗");
-            floatFormItem.Click += FloatFormItem_Click;
+            floatFormItem.Click += (sender, e) => SwitchToFloatMode();
             pauseItem = new ToolStripMenuItem("暂停");
-            pauseItem.Click += PauseItem_Click;
+            pauseItem.Click += (sender, e) => SwitchToPauseMode();
 
             if (!int.TryParse(store.Get("Mode"), out int mode))
             {
@@ -113,7 +112,7 @@ namespace Drawer
 
         private void SettingItem_Click(object sender, EventArgs e)
         {
-            Keys key = HotkeyDialog.GetKeys("设置", "更改热键：", store.Get("Hotkey"));
+            Keys key = PromptDialog.Hotkey("设置", "更改热键：", store.Get("Hotkey"));
             if (key != Keys.None)
             {
                 if (hotKeyItem.Enabled == false)
@@ -137,7 +136,7 @@ namespace Drawer
             try
             {
                 string currentKey = new EncryptString().Decrypt(store.Get("Key"));
-                string key = InputDialog.Show("编辑", "密码：", true, null, 20);
+                string key = PromptDialog.Input("编辑", "密码：", true, null, 20);
                 if (key == null)
                 {
                     return;
@@ -223,44 +222,41 @@ namespace Drawer
         private void IsAutoLaunchItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            string registryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-
-            if (menuItem.Checked == true)
+            if (!SetAutoLaunch(menuItem.Checked))
             {
-                try
-                {
-                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
-                    {
-                        key?.SetValue("Drawer", $"\"{appPath}\"");
-                    }
-                    store.Update("isAutoLaunch", "true");
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    MessageBox.Show($"注册表修改失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    menuItem.Checked = false;
-                }
-            }
-            else
-            {
-                try
-                {
-                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
-                    {
-                        key?.DeleteValue("Drawer", false);
-                    }
-                    store.Update("isAutoLaunch", "false");
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    MessageBox.Show($"注册表修改失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    menuItem.Checked = false;
-                }
+                menuItem.Checked = false;
             }
         }
 
-        private void HotKeyItem_Click(object sender, EventArgs e)
+        private bool SetAutoLaunch(bool enable)
+        {
+            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            const string registryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryKey, true))
+                {
+                    if (enable)
+                    {
+                        key?.SetValue("Drawer", $"\"{appPath}\"");
+                    }
+                    else
+                    {
+                        key?.DeleteValue("Drawer", false);
+                    }
+                }
+                store.Update("isAutoLaunch", enable ? "true" : "false");
+                return true;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show($"注册表修改失败。\n{ex.Message}", "自启", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        internal void SwitchToHotkeyMode()
         {
             hotKeyItem.Enabled = false;
             floatFormItem.Enabled = true;
@@ -268,6 +264,30 @@ namespace Drawer
             mainForm.EnableHotKey(GetStoredHotkey());
             floatForm.Hide();
             store.Update("Mode", "0");
+        }
+
+        internal void SwitchToFloatMode()
+        {
+            hotKeyItem.Enabled = true;
+            floatFormItem.Enabled = false;
+            pauseItem.Enabled = true;
+            mainForm.DisableHotkey();
+            Screen screen = Ui.PrimaryScreen();
+            if (screen != null)
+            {
+                floatForm.Location = new Point(screen.WorkingArea.Right - floatForm.Width - 22, screen.WorkingArea.Bottom - floatForm.Height - 16);
+            }
+            floatForm.ShowOrActivate();
+            store.Update("Mode", "1");
+        }
+
+        internal void SwitchToPauseMode()
+        {
+            hotKeyItem.Enabled = true;
+            floatFormItem.Enabled = true;
+            pauseItem.Enabled = false;
+            mainForm.DisableHotkey();
+            floatForm.Hide();
         }
 
         // parse the stored hotkey, falling back to F8 (and repairing the config) when missing or invalid
@@ -286,30 +306,6 @@ namespace Drawer
             }
             store.Update("Hotkey", "F8");
             return Keys.F8;
-        }
-
-        private void FloatFormItem_Click(object sender, EventArgs e)
-        {
-            hotKeyItem.Enabled = true;
-            floatFormItem.Enabled = false;
-            pauseItem.Enabled = true;
-            mainForm.DisableHotkey();
-            Screen screen = Screen.PrimaryScreen ?? Screen.AllScreens.FirstOrDefault();
-            if (screen != null)
-            {
-                floatForm.Location = new Point(screen.WorkingArea.Right - floatForm.Width - 22, screen.WorkingArea.Bottom - floatForm.Height - 16);
-            }
-            floatForm.ShowOrActivate();
-            store.Update("Mode", "1");
-        }
-
-        private void PauseItem_Click(object sender, EventArgs e)
-        {
-            hotKeyItem.Enabled = true;
-            floatFormItem.Enabled = true;
-            pauseItem.Enabled = false;
-            mainForm.DisableHotkey();
-            floatForm.Hide();
         }
 
         private void AboutItem_Click(object sender, EventArgs e)
@@ -335,9 +331,9 @@ namespace Drawer
             Application.Exit();
         }
 
-        public void FloatFormIcon(bool isRunIcon)
+        internal void FloatFormIcon(bool isRunIcon)
         {
-            floatForm.BackgroundImage = isRunIcon == true ? Properties.Resources.run : (Image)Properties.Resources.stop;
+            floatForm.BackgroundImage = isRunIcon ? Properties.Resources.run : (Image)Properties.Resources.stop;
         }
 
         [STAThread]

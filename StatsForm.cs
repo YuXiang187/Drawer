@@ -7,7 +7,6 @@ namespace Drawer
 {
     internal class StatsForm
     {
-        private static readonly string fontName = "微软雅黑";
         private static Form current;
 
         // shows the whole list in a scrollable window, a MessageBox cuts it off with an ellipsis
@@ -23,7 +22,7 @@ namespace Drawer
             using (Form form = new Form())
             {
                 current = form;
-                float dpiScale = Graphics.FromHwnd(form.Handle).DpiX / 96f;
+                float dpiScale = Ui.DpiScale(form);
 
                 form.Text = "统计";
                 form.Icon = Properties.Resources.tray_run;
@@ -45,7 +44,7 @@ namespace Drawer
                 {
                     Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                     BackColor = Color.White,
-                    Font = new Font(fontName, 10F, FontStyle.Regular, GraphicsUnit.Point, 134),
+                    Font = Ui.CreateFont(10F),
                     Location = new Point((int)(14 * dpiScale), (int)(12 * dpiScale)),
                     Multiline = true,
                     ReadOnly = true,
@@ -56,7 +55,7 @@ namespace Drawer
 
                 form.Controls.Add(namesTextBox);
                 // create the handle first, so the wrap layout runs once at the final width instead of twice
-                IntPtr handle = namesTextBox.Handle;
+                _ = namesTextBox.Handle;
                 namesTextBox.Text = content;
 
                 Button closeButton = new Button

@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace Drawer
 {
     internal class FloatForm : Form
     {
-        private Point offset;
         private bool isDragging = false;
         private readonly MainTray mainTray;
         private readonly ContextMenuStrip contextMenu;
-        private static float dpiScale;
 
         public FloatForm(MainTray mainTray)
         {
-            dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
+            float dpiScale = Ui.DpiScale(this);
             this.mainTray = mainTray;
 
             Text = "Drawer";
@@ -32,7 +29,7 @@ namespace Drawer
             Size = new Size((int)(38 * dpiScale), (int)(38 * dpiScale));
             AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
-            Screen screen = Screen.PrimaryScreen ?? Screen.AllScreens.FirstOrDefault();
+            Screen screen = Ui.PrimaryScreen();
             if (screen != null)
             {
                 Location = new Point(screen.WorkingArea.Right - Width - (int)(28 * dpiScale), screen.WorkingArea.Bottom - Height - (int)(16 * dpiScale));
@@ -49,17 +46,6 @@ namespace Drawer
             contextMenu.Items.Add(closeItem);
         }
 
-        // set do not appear in Alt+Tab list
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x80;
-                return cp;
-            }
-        }
-
         // an already visible float window is pulled to the front instead of being shown again
         public void ShowOrActivate()
         {
@@ -70,6 +56,16 @@ namespace Drawer
                 return;
             }
             Show();
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x80;
+                return cp;
+            }
         }
 
         private void FloatForm_Paint(object sender, PaintEventArgs e)
@@ -86,19 +82,17 @@ namespace Drawer
             }
             else if (menuItem.Text == "关闭")
             {
-                MainTray.hotKeyItem.Enabled = true;
-                MainTray.floatFormItem.Enabled = true;
-                MainTray.pauseItem.Enabled = false;
-                Hide();
+                mainTray.SwitchToPauseMode();
             }
         }
 
         private void FloatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            MainTray.hotKeyItem.Enabled = true;
-            MainTray.floatFormItem.Enabled = true;
-            MainTray.pauseItem.Enabled = false;
-            Hide();
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                mainTray.SwitchToPauseMode();
+            }
         }
 
         private void FloatForm_Load(object sender, EventArgs e)
@@ -133,7 +127,7 @@ namespace Drawer
             if (isDragging)
             {
                 Point newLocation = PointToScreen(new Point(e.X, e.Y));
-                newLocation.Offset(-offset.X - (Size.Width / 2), -offset.Y - (Size.Height / 2));
+                newLocation.Offset(-Size.Width / 2, -Size.Height / 2);
                 Location = newLocation;
             }
         }

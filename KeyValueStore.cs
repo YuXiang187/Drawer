@@ -110,12 +110,7 @@ namespace Drawer
 
         private static bool MatchesKey(string line, string key)
         {
-            if (!line.StartsWith(key + ":"))
-            {
-                return false;
-            }
-            int separatorIndex = line.IndexOf(':');
-            return separatorIndex == key.Length;
+            return line.StartsWith(key + ":");
         }
     }
 }

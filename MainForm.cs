@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,19 +10,18 @@ namespace Drawer
     internal class MainForm : Form
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern int RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+        private static extern int RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-        public bool isRun = false;
-        private static readonly string fontName = "微软雅黑";
+        internal bool isRun = false;
         private const int HOTKEY_ID = 187;
         private const int MarginX = 12;
         private const int BaseWidth = 450;
         private const float FontSize = 60F;
         private const float MinFontSize = 10F;
-        private static float dpiScale;
+        private readonly float dpiScale;
 
         private readonly StringPool pool;
         private readonly MainTray mainTray;
@@ -32,7 +30,7 @@ namespace Drawer
 
         public MainForm(MainTray mainTray)
         {
-            dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
+            dpiScale = Ui.DpiScale(this);
             this.mainTray = mainTray;
             pool = new StringPool();
 
@@ -51,20 +49,14 @@ namespace Drawer
             FormClosing += MainForm_FormClosing;
             ResumeLayout(false);
 
-            // set location in center
-            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
-            if (screen != null)
-            {
-                Rectangle screenArea = screen.WorkingArea;
-                Location = new Point(screenArea.Left + (screenArea.Width - Width) / 2, screenArea.Top + (screenArea.Height - Height) / 2);
-            }
+            Ui.CenterOnPrimary(this);
 
             mainLabel = new Label
             {
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
-                Font = new Font(fontName, FontSize, FontStyle.Bold, GraphicsUnit.Point, 134),
+                Font = Ui.CreateFont(FontSize, FontStyle.Bold),
                 Location = new Point((int)(12 * dpiScale), (int)(49 * dpiScale)),
                 Size = new Size((int)(426 * dpiScale), (int)(153 * dpiScale)),
                 Text = "LABEL",
@@ -102,7 +94,11 @@ namespace Drawer
                 }
 
                 uint vk = (uint)(currentHotkey & ~Keys.Control & ~Keys.Shift & ~Keys.Alt);
-                RegisterHotKey(Handle, HOTKEY_ID, fsModifiers, vk);
+                UnregisterHotKey(Handle, HOTKEY_ID);
+                if (RegisterHotKey(Handle, HOTKEY_ID, fsModifiers, vk) == 0)
+                {
+                    MessageBox.Show($"热键 {currentHotkey} 注册失败，可能已被其它程序占用。", "热键", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
         }
 
@@ -111,7 +107,6 @@ namespace Drawer
             UnregisterHotKey(Handle, HOTKEY_ID);
         }
 
-        // set do not appear in Alt+Tab list
         protected override CreateParams CreateParams
         {
             get
@@ -185,7 +180,7 @@ namespace Drawer
         // form width adapt the given names, a big list is estimated from a sample instead of measuring every entry
         private void FitToNames(List<string> names)
         {
-            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
+            Screen screen = Ui.PrimaryScreen();
             int margin = (int)(MarginX * dpiScale);
             int limit = screen != null ? screen.WorkingArea.Width - margin * 2 : (int)(426 * dpiScale);
 
@@ -199,7 +194,7 @@ namespace Drawer
 
             if (Math.Abs(size - mainLabel.Font.Size) > 0.1F)
             {
-                mainLabel.Font = new Font(fontName, size, FontStyle.Bold, GraphicsUnit.Point, 134);
+                mainLabel.Font = Ui.CreateFont(size, FontStyle.Bold);
             }
 
             int centerX = Location.X + ClientSize.Width / 2;
@@ -211,7 +206,7 @@ namespace Drawer
         // width requested for the widest of these names
         private static int WidestName(List<string> sample, float size)
         {
-            using (Font probe = new Font(fontName, size, FontStyle.Bold, GraphicsUnit.Point, 134))
+            using (Font probe = Ui.CreateFont(size, FontStyle.Bold))
             {
                 int widest = 0;
                 foreach (string name in sample)
@@ -248,7 +243,11 @@ namespace Drawer
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Hide();
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                Hide();
+            }
         }
     }
 }

@@ -272,13 +272,13 @@ namespace Drawer
             }
         }
 
-        // removes a group, refuses to remove the last remaining one, returns true when removed
-        public static bool DeleteGroup(string id)
+        // removes a group, refuses to remove the last remaining one
+        public static void DeleteGroup(string id)
         {
             List<string> ids = GetGroupIds();
             if (ids.Count <= 1 || !ids.Remove(id))
             {
-                return false;
+                return;
             }
 
             string active = GetActiveGroupId();
@@ -292,7 +292,6 @@ namespace Drawer
             {
                 store.Update("CurrentGroup", ids[0]);
             }
-            return true;
         }
 
         public static string FindGroupIdByName(string name)
@@ -309,7 +308,7 @@ namespace Drawer
         }
 
         // keeps the draw history order of the names that are still listed, appends new names first
-        internal static List<string> SyncPool(List<string> init, List<string> history)
+        private static List<string> SyncPool(List<string> init, List<string> history)
         {
             Dictionary<string, int> required = new Dictionary<string, int>();
             foreach (string name in init)

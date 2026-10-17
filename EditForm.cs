@@ -34,8 +34,6 @@ namespace Drawer
         private readonly ToolStripButton groupRenameButton;
         private readonly ToolStripButton groupDeleteButton;
 
-        private static readonly string fontName = "微软雅黑";
-        private static float dpiScale;
         private readonly KeyValueStore store;
         private readonly List<string> groupIds;
         private string currentGroupId;
@@ -46,7 +44,7 @@ namespace Drawer
 
         public EditForm()
         {
-            dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
+            float dpiScale = Ui.DpiScale(this);
             store = new KeyValueStore();
             groupIds = new List<string>();
             list = new List<string>();
@@ -103,7 +101,7 @@ namespace Drawer
 
             searchStripTextBox.Width = (int)(120 * dpiScale);
             searchStripTextBox.BorderStyle = BorderStyle.FixedSingle;
-            searchStripTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            searchStripTextBox.Font = Ui.CreateFont(12F);
 
             searchStripButton.Image = Properties.Resources.find;
             searchStripButton.Text = "查找";
@@ -153,7 +151,7 @@ namespace Drawer
             groupComboBox.AutoSize = false;
             groupComboBox.Width = (int)(200 * dpiScale);
             groupComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            groupComboBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            groupComboBox.Font = Ui.CreateFont(12F);
             groupComboBox.ComboBox.SelectionChangeCommitted += GroupComboBox_SelectionChangeCommitted;
 
             groupAddButton.Image = Properties.Resources.add;
@@ -187,7 +185,7 @@ namespace Drawer
 
             listBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listBox.BorderStyle = BorderStyle.FixedSingle;
-            listBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            listBox.Font = Ui.CreateFont(12F);
             listBox.ItemHeight = 27;
             listBox.Location = new Point((int)(12 * dpiScale), (int)(91 * dpiScale));
             listBox.ScrollAlwaysVisible = true;
@@ -198,7 +196,7 @@ namespace Drawer
 
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            textBox.Font = Ui.CreateFont(12F);
             textBox.Location = new Point((int)(254 * dpiScale), (int)(91 * dpiScale));
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
@@ -208,7 +206,7 @@ namespace Drawer
 
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
-            addTextBox.Font = new Font(fontName, 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            addTextBox.Font = Ui.CreateFont(12F);
             addTextBox.Location = new Point((int)(254 * dpiScale), (int)(413 * dpiScale));
             addTextBox.Size = new Size((int)(436 * dpiScale), (int)(34 * dpiScale));
             addTextBox.KeyDown += AddTextBox_KeyDown;
@@ -243,16 +241,10 @@ namespace Drawer
             MinimumSize = new Size((int)(600 * dpiScale), (int)(441 * dpiScale));
             AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
-            FormClosing += MainForm_FormClosing;
+            FormClosing += EditForm_FormClosing;
             ResumeLayout(false);
 
-            // set location in center
-            Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
-            if (screen != null)
-            {
-                Rectangle screenArea = screen.WorkingArea;
-                Location = new Point(screenArea.Left + (screenArea.Width - Width) / 2, screenArea.Top + (screenArea.Height - Height) / 2);
-            }
+            Ui.CenterOnPrimary(this);
 
             LoadGroup(GroupStore.GetActiveGroupId());
 
@@ -273,7 +265,7 @@ namespace Drawer
             selectStripStatusLabel.Text = $"选中：{listBox.SelectedIndices.Count}";
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void EditForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
@@ -366,24 +358,20 @@ namespace Drawer
 
         private void TextBox_TextChanged(object sender, EventArgs e)
         {
-            list = new List<string>(textBox.Text.Split(','));
-            listBox.DataSource = null;
+            list = textBox.Text.Length == 0 ? new List<string>() : new List<string>(textBox.Text.Split(','));
             listBox.DataSource = list;
             listBox.ClearSelected();
             listBox.SelectedIndex = listBox.Items.Count - 1;
             textBox.ScrollToCaret();
             totalStripStatusLabel.Text = $"总数：{listBox.Items.Count}";
 
-            if (textBox != null)
-            {
-                string originalText = textBox.Text;
-                string newText = NormalizeCommas(originalText);
+            string originalText = textBox.Text;
+            string newText = NormalizeCommas(originalText);
 
-                if (originalText != newText)
-                {
-                    textBox.Text = newText;
-                    textBox.SelectionStart = Math.Min(textBox.SelectionStart, textBox.Text.Length);
-                }
+            if (originalText != newText)
+            {
+                textBox.Text = newText;
+                textBox.SelectionStart = Math.Min(textBox.SelectionStart, textBox.Text.Length);
             }
         }
 
@@ -480,11 +468,6 @@ namespace Drawer
                 {
                     textBox.Clear();
                     searchStripTextBox.Clear();
-                    listBox.ClearSelected();
-                    if (list.Count == 1)
-                    {
-                        list.RemoveAt(0);
-                    }
                 }
             }
         }
@@ -494,12 +477,12 @@ namespace Drawer
             EncryptString es = new EncryptString();
 
             string currectKey = es.Decrypt(store.Get("Key"));
-            string key = InputDialog.Show("更改密码", "原密码：", true, null, 20);
+            string key = PromptDialog.Input("更改密码", "原密码：", true, null, 20);
             if (key != null)
             {
                 if (key == currectKey)
                 {
-                    string changeKey = InputDialog.Show("更改密码", "新密码：", false, null, 20);
+                    string changeKey = PromptDialog.Input("更改密码", "新密码：", false, null, 20);
                     if (!string.IsNullOrEmpty(changeKey))
                     {
                         store.Update("Key", es.Encrypt(changeKey));
@@ -652,7 +635,7 @@ namespace Drawer
 
         private void GroupAddButton_Click(object sender, EventArgs e)
         {
-            string name = InputDialog.Show("添加分组", "组名：", false, null, 30);
+            string name = PromptDialog.Input("添加分组", "组名：", false, null, 30);
             if (name == null)
             {
                 return;
@@ -688,7 +671,7 @@ namespace Drawer
         private void GroupRenameButton_Click(object sender, EventArgs e)
         {
             string currentName = GroupStore.GetGroupName(currentGroupId);
-            string name = InputDialog.Show("重命名分组", "新组名：", false, currentName, 30);
+            string name = PromptDialog.Input("重命名分组", "新组名：", false, currentName, 30);
             if (name == null)
             {
                 return;
