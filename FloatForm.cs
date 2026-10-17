@@ -60,6 +60,18 @@ namespace Drawer
             }
         }
 
+        // an already visible float window is pulled to the front instead of being shown again
+        public void ShowOrActivate()
+        {
+            if (Visible)
+            {
+                BringToFront();
+                Activate();
+                return;
+            }
+            Show();
+        }
+
         private void FloatForm_Paint(object sender, PaintEventArgs e)
         {
             ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Color.DarkGray, ButtonBorderStyle.Solid);

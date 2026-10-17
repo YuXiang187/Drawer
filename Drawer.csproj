@@ -128,6 +128,7 @@
     <Compile Include="MainTray.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringPool.cs" />
+    <Compile Include="StatsForm.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

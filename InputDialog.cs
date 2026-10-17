@@ -11,6 +11,13 @@ namespace Drawer
 
         public static string Show(string title, string prompt, bool isPassword, string initialText = null, int maxLength = 0)
         {
+            // a second request brings the open dialog back instead of stacking another one
+            if (inputForm != null && !inputForm.IsDisposed)
+            {
+                inputForm.Activate();
+                return null;
+            }
+
             inputForm = new Form();
             dpiScale = Graphics.FromHwnd(inputForm.Handle).DpiX / 96f;
             inputForm.Text = title;
@@ -80,6 +87,7 @@ namespace Drawer
             DialogResult dialogResult = inputForm.ShowDialog();
             string inputText = dialogResult == DialogResult.OK ? inputTextBox.Text : null;
             inputForm.Dispose();
+            inputForm = null;
             return inputText;
         }
 

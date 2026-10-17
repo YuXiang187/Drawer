@@ -14,6 +14,7 @@ namespace Drawer
         private static readonly object sync = new object();
         private static List<string> lines;
 
+        // returns null when the file cannot be read, so a bad read never turns into an empty config
         private static List<string> Lines()
         {
             if (lines == null)
@@ -24,23 +25,12 @@ namespace Drawer
                 }
                 catch (IOException)
                 {
-                    lines = new List<string>();
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    lines = new List<string>();
                 }
             }
             return lines;
-        }
-
-        public void Add(string key, string value)
-        {
-            lock (sync)
-            {
-                Lines().Add($"{key}:{value}");
-                Save();
-            }
         }
 
         public void Update(string key, string value)
@@ -48,6 +38,10 @@ namespace Drawer
             lock (sync)
             {
                 List<string> all = Lines();
+                if (all == null)
+                {
+                    return;
+                }
                 bool found = false;
                 for (int i = 0; i < all.Count; i++)
                 {
@@ -71,7 +65,8 @@ namespace Drawer
         {
             lock (sync)
             {
-                if (Lines().RemoveAll(line => MatchesKey(line, key)) > 0)
+                List<string> all = Lines();
+                if (all != null && all.RemoveAll(line => MatchesKey(line, key)) > 0)
                 {
                     Save();
                 }
@@ -82,7 +77,12 @@ namespace Drawer
         {
             lock (sync)
             {
-                foreach (string line in Lines())
+                List<string> all = Lines();
+                if (all == null)
+                {
+                    return null;
+                }
+                foreach (string line in all)
                 {
                     if (MatchesKey(line, key))
                     {

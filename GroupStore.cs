@@ -94,11 +94,6 @@ namespace Drawer
             }
         }
 
-        public static List<string> GetInit(string id)
-        {
-            return new List<string>(GetInitReference(id));
-        }
-
         // shared name list, must not be modified by the caller
         public static List<string> GetInitReference(string id)
         {
@@ -137,14 +132,6 @@ namespace Drawer
             }
             store.Update("initPool@" + id, es.Encrypt(string.Join(",", clean)));
             store.Update("pool@" + id, es.Encrypt(string.Join(",", pool)));
-        }
-
-        public static List<string> GetPool(string id)
-        {
-            lock (cacheLock)
-            {
-                return new List<string>(LoadPool(id));
-            }
         }
 
         // shared draw history, must not be modified by the caller
@@ -190,12 +177,11 @@ namespace Drawer
             return pool;
         }
 
-        // moves the drawn entry to the end by index and marks the history dirty
-        internal static string MoveDrawnToEnd(string id, int index)
+        // moves the drawn entry to the end and marks the history dirty, the pool must come from GetPoolForUpdate
+        internal static string MoveDrawnToEnd(string id, List<string> pool, int index)
         {
             lock (cacheLock)
             {
-                List<string> pool = GetPoolForUpdate(id);
                 string value = pool[index];
                 pool.RemoveAt(index);
                 pool.Add(value);

@@ -13,6 +13,13 @@ namespace Drawer
 
         public static Keys GetKeys(string title, string prompt, string boxText)
         {
+            // a second request brings the open dialog back instead of stacking another one
+            if (hotkeyForm != null && !hotkeyForm.IsDisposed)
+            {
+                hotkeyForm.Activate();
+                return Keys.None;
+            }
+
             hotkey = Keys.None;
             hotkeyForm = new Form();
             dpiScale = Graphics.FromHwnd(hotkeyForm.Handle).DpiX / 96f;
@@ -66,7 +73,10 @@ namespace Drawer
 
             hotkeyForm.Controls.Add(toolStrip);
 
-            return hotkeyForm.ShowDialog() == DialogResult.OK ? hotkey : Keys.None;
+            DialogResult dialogResult = hotkeyForm.ShowDialog();
+            hotkeyForm.Dispose();
+            hotkeyForm = null;
+            return dialogResult == DialogResult.OK ? hotkey : Keys.None;
         }
 
         private static void InputForm_KeyDown(object sender, KeyEventArgs e)

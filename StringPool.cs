@@ -24,7 +24,7 @@ namespace Drawer
 
             // move the drawn name to the end by index instead of searching for its value
             int index = PickIndex(pool);
-            return GroupStore.MoveDrawnToEnd(id, index);
+            return GroupStore.MoveDrawnToEnd(id, pool, index);
         }
 
         // used by the rolling animation

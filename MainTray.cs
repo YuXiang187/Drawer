@@ -10,8 +10,6 @@ namespace Drawer
 {
     internal class MainTray
     {
-        private const int PreviewCount = 50;
-
         private static readonly Dictionary<string, string> DefaultConfig = new Dictionary<string, string>
         {
             { "Mode", "0" },
@@ -24,6 +22,7 @@ namespace Drawer
         private readonly FloatForm floatForm;
         public readonly MainForm mainForm;
         private EditForm editForm;
+        private bool editing;
         private readonly ToolStripMenuItem groupMenuItem;
 
         public NotifyIcon notifyIcon;
@@ -69,7 +68,7 @@ namespace Drawer
                     break;
                 case 1:
                     floatFormItem.Enabled = false;
-                    floatForm.Show();
+                    floatForm.ShowOrActivate();
                     break;
             }
 
@@ -129,40 +128,55 @@ namespace Drawer
 
         private void EditItem_Click(object sender, EventArgs e)
         {
-            string currectKey = new EncryptString().Decrypt(store.Get("Key"));
-            string key = InputDialog.Show("编辑", "密码：", true, null, 20);
-            if (key != null)
+            if (editing)
             {
-                if (key == currectKey)
+                return;
+            }
+
+            editing = true;
+            try
+            {
+                string currentKey = new EncryptString().Decrypt(store.Get("Key"));
+                string key = InputDialog.Show("编辑", "密码：", true, null, 20);
+                if (key == null)
                 {
-                    if (editForm == null || editForm.IsDisposed)
-                    {
-                        if (key == "123456")
-                        {
-                            MessageBox.Show("检测到您正在使用初始密码。\n为确保列表内容不被恶意篡改，请及时使用“密码”功能更换密码。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        try
-                        {
-                            editForm = new EditForm();
-                            editForm.Show();
-                        }
-                        catch (Exception ex)
-                        {
-                            // a huge list may fail to load, report it instead of falling into the global handler
-                            editForm?.Dispose();
-                            editForm = null;
-                            MessageBox.Show($"打开编辑窗口失败。\n{ex.Message}", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        editForm.Focus();
-                    }
+                    return;
                 }
-                else
+                if (key != currentKey)
                 {
                     MessageBox.Show("密码错误。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
+                if (editForm != null && !editForm.IsDisposed)
+                {
+                    // an open editor is brought back instead of opening a second one
+                    if (editForm.WindowState == FormWindowState.Minimized)
+                    {
+                        editForm.WindowState = FormWindowState.Normal;
+                    }
+                    editForm.Activate();
+                    return;
+                }
+                if (key == "123456")
+                {
+                    MessageBox.Show("检测到您正在使用初始密码。\n为确保列表内容不被恶意篡改，请及时使用“密码”功能更换密码。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                try
+                {
+                    editForm = new EditForm();
+                    editForm.Show();
+                }
+                catch (Exception ex)
+                {
+                    // a huge list may fail to load, report it instead of falling into the global handler
+                    editForm?.Dispose();
+                    editForm = null;
+                    MessageBox.Show($"打开编辑窗口失败。\n{ex.Message}", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            finally
+            {
+                editing = false;
             }
         }
 
@@ -285,7 +299,7 @@ namespace Drawer
             {
                 floatForm.Location = new Point(screen.WorkingArea.Right - floatForm.Width - 22, screen.WorkingArea.Bottom - floatForm.Height - 16);
             }
-            floatForm.Show();
+            floatForm.ShowOrActivate();
             store.Update("Mode", "1");
         }
 
@@ -305,10 +319,12 @@ namespace Drawer
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            List<string> names = GroupStore.GetInit(GroupStore.GetActiveGroupId());
-            // only the head of a big list is shown, otherwise the dialog would freeze
-            string shown = names.Count > PreviewCount ? string.Join(", ", names.Take(PreviewCount)) + " ..." : string.Join(", ", names);
-            MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(GroupStore.GetActiveGroupId())}\n\n抽取数量：{names.Count}\n\n抽取名单：{shown}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // the tray menu is still closing here, a window opened now can be dropped, so post it one message later
+            mainForm.BeginInvoke(new Action(() =>
+            {
+                string id = GroupStore.GetActiveGroupId();
+                StatsForm.Show(GroupStore.GetGroupName(id), GroupStore.GetInitReference(id));
+            }));
         }
 
         private void ExitItem_Click(object sender, EventArgs e)

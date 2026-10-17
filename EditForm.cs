@@ -35,7 +35,6 @@ namespace Drawer
         private readonly ToolStripButton groupDeleteButton;
 
         private static readonly string fontName = "微软雅黑";
-        private const int PreviewCount = 50;
         private static float dpiScale;
         private readonly KeyValueStore store;
         private readonly List<string> groupIds;
@@ -550,7 +549,7 @@ namespace Drawer
                 groupId = GroupStore.AddGroup(GroupStore.DefaultGroupName);
             }
             currentGroupId = groupId;
-            pendingContent = string.Join(",", GroupStore.GetInit(groupId));
+            pendingContent = string.Join(",", GroupStore.GetInitReference(groupId));
             if (Visible)
             {
                 FillContent();
@@ -734,9 +733,7 @@ namespace Drawer
                 list = list.Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
                 GroupStore.SetInit(currentGroupId, list);
                 GroupStore.SetActiveGroup(currentGroupId);
-                // only the head of a big list is shown, otherwise the dialog would freeze
-                string shown = list.Count > PreviewCount ? string.Join(", ", list.Take(PreviewCount)) + " ..." : string.Join(", ", list);
-                MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(currentGroupId)}\n\n抽取数量：{list.Count}\n\n抽取名单：{shown}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                StatsForm.Show(GroupStore.GetGroupName(currentGroupId), list);
                 Dispose();
             }
             else
