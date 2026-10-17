@@ -22,6 +22,7 @@ namespace Drawer
         private const float FontSize = 60F;
         private const float MinFontSize = 10F;
         private bool centered;
+        private float labelFontSize = FontSize;
 
         private readonly StringPool pool;
         private readonly MainTray mainTray;
@@ -50,7 +51,7 @@ namespace Drawer
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
-                Font = Ui.CreateFont(FontSize, FontStyle.Bold),
+                Font = Ui.CreateFont(this, FontSize, FontStyle.Bold),
                 Text = "LABEL",
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -71,6 +72,8 @@ namespace Drawer
             {
                 return;
             }
+
+            mainLabel.Font = Ui.CreateFont(this, labelFontSize, FontStyle.Bold);
 
             int padding = MarginX * 2;
             ClientSize = Ui.Px(this, BaseWidth, 250);
@@ -214,9 +217,10 @@ namespace Drawer
                 required = WidestName(names, size);
             }
 
-            if (Math.Abs(size - mainLabel.Font.Size) > 0.1F)
+            if (Math.Abs(size - labelFontSize) > 0.1F)
             {
-                mainLabel.Font = Ui.CreateFont(size, FontStyle.Bold);
+                labelFontSize = size;
+                mainLabel.Font = Ui.CreateFont(this, size, FontStyle.Bold);
             }
 
             int centerX = Location.X + ClientSize.Width / 2;
@@ -226,9 +230,9 @@ namespace Drawer
         }
 
         // width requested for the widest of these names
-        private static int WidestName(List<string> sample, float size)
+        private int WidestName(List<string> sample, float size)
         {
-            using (Font probe = Ui.CreateFont(size, FontStyle.Bold))
+            using (Font probe = Ui.CreateDetachedFont(this, size, FontStyle.Bold))
             {
                 int widest = 0;
                 foreach (string name in sample)

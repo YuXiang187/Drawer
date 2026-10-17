@@ -103,8 +103,7 @@ namespace Drawer
             }
             lock (cacheLock)
             {
-                List<string> init;
-                if (!initCache.TryGetValue(id, out init))
+                if (!initCache.TryGetValue(id, out List<string> init))
                 {
                     init = Split(es.Decrypt(store.Get("initPool@" + id) ?? ""));
                     initCache[id] = init;
@@ -168,8 +167,7 @@ namespace Drawer
             {
                 return new List<string>();
             }
-            List<string> pool;
-            if (!poolCache.TryGetValue(id, out pool))
+            if (!poolCache.TryGetValue(id, out List<string> pool))
             {
                 pool = Split(es.Decrypt(store.Get("pool@" + id) ?? ""));
                 poolCache[id] = pool;
@@ -212,8 +210,7 @@ namespace Drawer
             {
                 foreach (string id in dirtyPools)
                 {
-                    List<string> pool;
-                    values["pool@" + id] = poolCache.TryGetValue(id, out pool) ? string.Join(",", pool) : "";
+                    values["pool@" + id] = poolCache.TryGetValue(id, out List<string> pool) ? string.Join(",", pool) : "";
                 }
                 dirtyPools.Clear();
             }

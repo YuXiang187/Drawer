@@ -1,3 +1,5 @@
+using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -10,7 +12,7 @@ namespace Drawer
         private Keys hotkey;
         private string text;
 
-        private PromptDialog(string title, string prompt, int width, int boxWidth)
+        private PromptDialog(string title, string prompt, int boxWidth)
         {
             form = new DpiAwareForm();
             inputForm = form;
@@ -24,15 +26,12 @@ namespace Drawer
 
             ToolStrip toolStrip = new ToolStrip();
 
-            ToolStripLabel promptLabel = new ToolStripLabel(prompt)
-            {
-                Font = Ui.CreateFont(12F)
-            };
+            ToolStripLabel promptLabel = new ToolStripLabel(prompt);
 
             inputTextBox = new ToolStripTextBox
             {
                 BorderStyle = BorderStyle.FixedSingle,
-                Font = Ui.CreateFont(12F)
+                AutoSize = false
             };
 
             ToolStripButton okButton = new ToolStripButton
@@ -57,10 +56,17 @@ namespace Drawer
 
             form.LayoutRequested += (sender, e) =>
             {
-                form.Width = Ui.Px(form, width);
-                form.Height = Ui.Px(form, 72);
+                Font font = Ui.CreateFont(form, 12F);
+                promptLabel.Font = font;
+                inputTextBox.Font = font;
                 toolStrip.ImageScalingSize = Ui.Px(form, 20, 20);
                 inputTextBox.Width = Ui.Px(form, boxWidth);
+                inputTextBox.Height = Ui.Px(form, 30);
+
+                Size content = toolStrip.GetPreferredSize(Size.Empty);
+                form.ClientSize = new Size(
+                    Math.Max(content.Width + Ui.Px(form, 16), Ui.Px(form, 160)),
+                    content.Height + Ui.Px(form, 6));
             };
         }
 
@@ -71,7 +77,7 @@ namespace Drawer
                 return null;
             }
 
-            PromptDialog dialog = new PromptDialog(title, prompt, 278, 120);
+            PromptDialog dialog = new PromptDialog(title, prompt, 120);
             dialog.inputTextBox.TextBox.UseSystemPasswordChar = isPassword;
             if (maxLength > 0)
             {
@@ -99,7 +105,7 @@ namespace Drawer
                 return Keys.None;
             }
 
-            PromptDialog dialog = new PromptDialog(title, prompt, 370, 180);
+            PromptDialog dialog = new PromptDialog(title, prompt, 180);
             dialog.inputTextBox.Text = boxText;
             dialog.inputTextBox.Enabled = false;
             dialog.form.KeyDown += dialog.Hotkey_KeyDown;

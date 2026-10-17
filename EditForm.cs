@@ -100,7 +100,8 @@ namespace Drawer
             exportStripButton.Click += ExportStripButton_Click;
 
             searchStripTextBox.BorderStyle = BorderStyle.FixedSingle;
-            searchStripTextBox.Font = Ui.CreateFont(12F);
+            searchStripTextBox.Font = Ui.CreateFont(this, 12F);
+            searchStripTextBox.AutoSize = false;
 
             searchStripButton.Image = Properties.Resources.find;
             searchStripButton.Text = "查找";
@@ -148,7 +149,7 @@ namespace Drawer
 
             groupComboBox.AutoSize = false;
             groupComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            groupComboBox.Font = Ui.CreateFont(12F);
+            groupComboBox.Font = Ui.CreateFont(this, 12F);
             groupComboBox.ComboBox.SelectionChangeCommitted += GroupComboBox_SelectionChangeCommitted;
 
             groupAddButton.Image = Properties.Resources.add;
@@ -181,7 +182,8 @@ namespace Drawer
 
             listBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listBox.BorderStyle = BorderStyle.FixedSingle;
-            listBox.Font = Ui.CreateFont(12F);
+            listBox.IntegralHeight = false;
+            listBox.Font = Ui.CreateFont(this, 12F);
             listBox.ScrollAlwaysVisible = true;
             listBox.SelectionMode = SelectionMode.MultiExtended;
             listBox.SelectedIndexChanged += ListBox_SelectedIndexChanged;
@@ -189,7 +191,7 @@ namespace Drawer
 
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Font = Ui.CreateFont(12F);
+            textBox.Font = Ui.CreateFont(this, 12F);
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
             textBox.TextChanged += TextBox_TextChanged;
@@ -197,7 +199,7 @@ namespace Drawer
 
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
-            addTextBox.Font = Ui.CreateFont(12F);
+            addTextBox.Font = Ui.CreateFont(this, 12F);
             addTextBox.KeyDown += AddTextBox_KeyDown;
 
             addButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -241,28 +243,59 @@ namespace Drawer
 
             toolStrip.ImageScalingSize = Ui.Px(this, 20, 20);
             groupToolStrip.ImageScalingSize = Ui.Px(this, 20, 20);
+            ApplyFonts();
             searchStripTextBox.Width = Ui.Px(this, 120);
+            searchStripTextBox.Height = Ui.Px(this, 28);
             groupComboBox.Width = Ui.Px(this, 200);
 
             MinimumSize = Size.Empty;
             ClientSize = Ui.Px(this, 782, 474);
             MinimumSize = Ui.Px(this, 600, 441);
 
+            toolStrip.PerformLayout();
+            groupToolStrip.PerformLayout();
+            statusStrip.PerformLayout();
+            PerformLayout();
+
+            int margin = Ui.Px(this, 12);
+            int gap = Ui.Px(this, 8);
+            int rowHeight = Ui.Px(this, 34);
+            int buttonSize = Ui.Px(this, 34);
+            int right = ClientSize.Width - margin;
+            int top = groupToolStrip.Bottom + Ui.Px(this, 2);
+            int bottom = statusStrip.Top - Ui.Px(this, 8);
+            int addX = right - buttonSize * 2 - Ui.Px(this, 6);
+
             listBox.ItemHeight = Ui.Px(this, 27);
-            listBox.Location = new Point(Ui.Px(this, 12), Ui.Px(this, 91));
-            listBox.Size = Ui.Px(this, 236, 353);
+            listBox.Location = new Point(margin, top);
+            listBox.Size = new Size(Ui.Px(this, 236), bottom - top);
 
-            textBox.Location = new Point(Ui.Px(this, 254), Ui.Px(this, 91));
-            textBox.Size = Ui.Px(this, 516, 314);
+            textBox.Location = new Point(Ui.Px(this, 254), top);
+            textBox.Size = new Size(right - Ui.Px(this, 254), bottom - top - rowHeight - gap);
 
-            addTextBox.Location = new Point(Ui.Px(this, 254), Ui.Px(this, 413));
-            addTextBox.Size = Ui.Px(this, 436, 34);
+            addTextBox.Size = new Size(addX - Ui.Px(this, 6) - Ui.Px(this, 254), rowHeight);
+            addTextBox.Location = new Point(Ui.Px(this, 254), bottom - rowHeight + (rowHeight - addTextBox.Height) / 2);
 
-            addButton.Location = new Point(Ui.Px(this, 696), Ui.Px(this, 411));
-            addButton.Size = Ui.Px(this, 34, 34);
+            addButton.Location = new Point(addX, bottom - rowHeight);
+            addButton.Size = new Size(buttonSize, buttonSize);
 
-            removeButton.Location = new Point(Ui.Px(this, 736), Ui.Px(this, 411));
-            removeButton.Size = Ui.Px(this, 34, 34);
+            removeButton.Location = new Point(right - buttonSize, bottom - rowHeight);
+            removeButton.Size = new Size(buttonSize, buttonSize);
+        }
+
+        private void ApplyFonts()
+        {
+            Font textFont = Ui.CreateFont(this, 12F);
+            Font stripFont = Ui.CreateFont(this, 9F);
+
+            toolStrip.Font = stripFont;
+            groupToolStrip.Font = stripFont;
+            statusStrip.Font = stripFont;
+            searchStripTextBox.Font = textFont;
+            groupComboBox.Font = textFont;
+            listBox.Font = textFont;
+            textBox.Font = textFont;
+            addTextBox.Font = textFont;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -354,6 +387,7 @@ namespace Drawer
             if (e.KeyChar == '\r' || e.KeyChar == '\n')
             {
                 e.Handled = true;
+                textBox.SelectedText = ",";
                 return;
             }
             if (char.IsWhiteSpace(e.KeyChar) && TouchesComma())
