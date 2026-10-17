@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Drawer
 {
@@ -8,9 +9,16 @@ namespace Drawer
     {
         public const string DefaultGroupName = "默认";
         private const string SamplePool = "OMpOcezBBlbG3U4oQTaooNuDCgXUQzz74B7FN6IAzE8=";
+        private const int PoolFlushDelayMs = 2000;
 
         private static readonly KeyValueStore store = new KeyValueStore();
         private static readonly EncryptString es = new EncryptString();
+
+        private static readonly Dictionary<string, List<string>> initCache = new Dictionary<string, List<string>>();
+        private static readonly Dictionary<string, List<string>> poolCache = new Dictionary<string, List<string>>();
+        private static readonly HashSet<string> dirtyPools = new HashSet<string>();
+        private static readonly object cacheLock = new object();
+        private static Timer flushTimer;
 
         static GroupStore()
         {
@@ -45,6 +53,17 @@ namespace Drawer
             }
         }
 
+        // reads a group into the cache
+        public static void Preload(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return;
+            }
+            GetInitReference(id);
+            GetPoolForUpdate(id);
+        }
+
         // the ids in display order
         public static List<string> GetGroupIds()
         {
@@ -77,34 +96,156 @@ namespace Drawer
 
         public static List<string> GetInit(string id)
         {
-            return Split(es.Decrypt(store.Get("initPool@" + id) ?? ""));
+            return new List<string>(GetInitReference(id));
         }
 
-        // writes the name list and rebuilds the pool
+        // shared name list, must not be modified by the caller
+        public static List<string> GetInitReference(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return new List<string>();
+            }
+            lock (cacheLock)
+            {
+                List<string> init;
+                if (!initCache.TryGetValue(id, out init))
+                {
+                    init = Split(es.Decrypt(store.Get("initPool@" + id) ?? ""));
+                    initCache[id] = init;
+                }
+                return init;
+            }
+        }
+
+        // writes the name list and rebuilds the draw history
         public static void SetInit(string id, List<string> names)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return;
+            }
+
             List<string> clean = new List<string>(names);
-            List<string> pool = StringPool.BuildSyncedPool(clean, GetPool(id));
+            List<string> pool;
+            lock (cacheLock)
+            {
+                pool = SyncPool(clean, LoadPool(id));
+                initCache[id] = clean;
+                poolCache[id] = pool;
+                dirtyPools.Remove(id);
+            }
             store.Update("initPool@" + id, es.Encrypt(string.Join(",", clean)));
             store.Update("pool@" + id, es.Encrypt(string.Join(",", pool)));
         }
 
         public static List<string> GetPool(string id)
         {
+            lock (cacheLock)
+            {
+                return new List<string>(LoadPool(id));
+            }
+        }
+
+        // shared draw history, must not be modified by the caller
+        public static List<string> GetPoolReference(string id)
+        {
+            lock (cacheLock)
+            {
+                return LoadPool(id);
+            }
+        }
+
+        // shared draw history, mutated in place by StringPool
+        public static List<string> GetPoolForUpdate(string id)
+        {
+            lock (cacheLock)
+            {
+                List<string> pool = LoadPool(id);
+                if (pool.Count == 0)
+                {
+                    List<string> init = GetInitReference(id);
+                    if (init.Count > 0)
+                    {
+                        pool = new List<string>(init);
+                        poolCache[id] = pool;
+                    }
+                }
+                return pool;
+            }
+        }
+
+        private static List<string> LoadPool(string id)
+        {
             if (string.IsNullOrEmpty(id))
             {
                 return new List<string>();
             }
-            return Split(es.Decrypt(store.Get("pool@" + id) ?? ""));
+            List<string> pool;
+            if (!poolCache.TryGetValue(id, out pool))
+            {
+                pool = Split(es.Decrypt(store.Get("pool@" + id) ?? ""));
+                poolCache[id] = pool;
+            }
+            return pool;
         }
 
-        public static void SetPool(string id, List<string> pool)
+        // moves the drawn entry to the end by index and marks the history dirty
+        internal static string MoveDrawnToEnd(string id, int index)
         {
-            if (string.IsNullOrEmpty(id))
+            lock (cacheLock)
             {
-                return;
+                List<string> pool = GetPoolForUpdate(id);
+                string value = pool[index];
+                pool.RemoveAt(index);
+                pool.Add(value);
+                dirtyPools.Add(id);
+                ScheduleFlush();
+                return value;
             }
-            store.Update("pool@" + id, es.Encrypt(string.Join(",", pool)));
+        }
+
+        // the history is written back in batches, at most one write per interval
+        private static void ScheduleFlush()
+        {
+            if (flushTimer == null)
+            {
+                flushTimer = new Timer(state => FlushPools(), null, PoolFlushDelayMs, Timeout.Infinite);
+            }
+            else
+            {
+                flushTimer.Change(PoolFlushDelayMs, Timeout.Infinite);
+            }
+        }
+
+        // writes every changed history back in one pass
+        public static void FlushPools()
+        {
+            Dictionary<string, string> values = new Dictionary<string, string>();
+            lock (cacheLock)
+            {
+                foreach (string id in dirtyPools)
+                {
+                    List<string> pool;
+                    values["pool@" + id] = poolCache.TryGetValue(id, out pool) ? string.Join(",", pool) : "";
+                }
+                dirtyPools.Clear();
+            }
+            foreach (KeyValuePair<string, string> entry in values)
+            {
+                store.Update(entry.Key, es.Encrypt(entry.Value));
+            }
+        }
+
+        // drops the cached lists of a group that is gone, so they are never written back
+        private static void DiscardGroup(string id)
+        {
+            lock (cacheLock)
+            {
+                initCache.Remove(id);
+                poolCache.Remove(id);
+                dirtyPools.Remove(id);
+            }
         }
 
         public static int GetGroupCount()
@@ -126,6 +267,14 @@ namespace Drawer
             store.Update("name@" + id, name);
             store.Update("initPool@" + id, SamplePool);
             store.Update("pool@" + id, SamplePool);
+
+            List<string> sample = Split(es.Decrypt(SamplePool));
+            lock (cacheLock)
+            {
+                initCache[id] = sample;
+                poolCache[id] = new List<string>(sample);
+                dirtyPools.Remove(id);
+            }
             return id;
         }
 
@@ -147,6 +296,7 @@ namespace Drawer
             }
 
             string active = GetActiveGroupId();
+            DiscardGroup(id);
 
             store.Update("Groups", string.Join(",", ids));
             store.Delete("name@" + id);
@@ -170,6 +320,47 @@ namespace Drawer
                 }
             }
             return null;
+        }
+
+        // keeps the draw history order of the names that are still listed, appends new names first
+        internal static List<string> SyncPool(List<string> init, List<string> history)
+        {
+            Dictionary<string, int> required = new Dictionary<string, int>();
+            foreach (string name in init)
+            {
+                required[name] = required.TryGetValue(name, out int count) ? count + 1 : 1;
+            }
+
+            List<string> keptHistory = new List<string>();
+            Dictionary<string, int> kept = new Dictionary<string, int>();
+            foreach (string name in history)
+            {
+                int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
+                int requiredCount = required.TryGetValue(name, out int r) ? r : 0;
+                if (keptCount < requiredCount)
+                {
+                    keptHistory.Add(name);
+                    kept[name] = keptCount + 1;
+                }
+            }
+
+            List<string> fresh = new List<string>();
+            Dictionary<string, int> added = new Dictionary<string, int>();
+            foreach (string name in init)
+            {
+                int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
+                int addedCount = added.TryGetValue(name, out int a) ? a : 0;
+                int requiredCount = required.TryGetValue(name, out int r) ? r : 0;
+                if (keptCount + addedCount < requiredCount)
+                {
+                    fresh.Add(name);
+                    added[name] = addedCount + 1;
+                }
+            }
+
+            List<string> merged = new List<string>(fresh);
+            merged.AddRange(keptHistory);
+            return merged;
         }
 
         private static List<string> Split(string value)

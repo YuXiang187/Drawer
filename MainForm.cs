@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -34,6 +35,9 @@ namespace Drawer
             dpiScale = Graphics.FromHwnd(Handle).DpiX / 96f;
             this.mainTray = mainTray;
             pool = new StringPool();
+
+            // read the name list in the background
+            Task.Run(() => GroupStore.Preload(GroupStore.GetActiveGroupId()));
 
             Text = "YuXiang Drawer";
             ClientSize = new Size((int)(BaseWidth * dpiScale), (int)(250 * dpiScale));
@@ -142,6 +146,11 @@ namespace Drawer
                 for (int i = 0; i < 8 && !IsDisposed; i++)
                 {
                     mainLabel.Text = i == 7 ? pool.Draw() : pool.Get();
+                    // the drawn name stays on screen, so widen for it when the sample did not cover it
+                    if (i == 7)
+                    {
+                        FitDrawn(mainLabel.Text);
+                    }
                     await Task.Delay(60);
                 }
                 if (IsDisposed)
@@ -150,7 +159,6 @@ namespace Drawer
                     return;
                 }
                 mainLabel.ForeColor = Color.Black;
-                pool.Save();
                 mainTray.notifyIcon.Icon = Properties.Resources.tray_run;
                 mainTray.FloatFormIcon(true);
                 isRun = false;
@@ -161,16 +169,32 @@ namespace Drawer
         // form width adapt the label text
         private void FitToNames()
         {
+            FitToNames(pool.Sample(StringPool.SampleCount));
+        }
+
+        // widens the form only when the drawn name does not fit, so a short name does not shrink the window
+        private void FitDrawn(string name)
+        {
+            if (mainLabel.Width >= TextRenderer.MeasureText(name, mainLabel.Font).Width)
+            {
+                return;
+            }
+            FitToNames(new List<string> { name });
+        }
+
+        // form width adapt the given names, a big list is estimated from a sample instead of measuring every entry
+        private void FitToNames(List<string> names)
+        {
             Screen screen = Screen.AllScreens.FirstOrDefault(s => s.Primary) ?? Screen.AllScreens.FirstOrDefault();
             int margin = (int)(MarginX * dpiScale);
             int limit = screen != null ? screen.WorkingArea.Width - margin * 2 : (int)(426 * dpiScale);
 
             float size = FontSize;
-            int required = WidestName(size);
+            int required = WidestName(names, size);
             while (required > limit && size > MinFontSize)
             {
                 size = Math.Max(MinFontSize, size * limit / required);
-                required = WidestName(size);
+                required = WidestName(names, size);
             }
 
             if (Math.Abs(size - mainLabel.Font.Size) > 0.1F)
@@ -184,13 +208,13 @@ namespace Drawer
             Location = new Point(centerX - ClientSize.Width / 2, Location.Y);
         }
 
-        // width requested for the widest name
-        private static int WidestName(float size)
+        // width requested for the widest of these names
+        private static int WidestName(List<string> sample, float size)
         {
             using (Font probe = new Font(fontName, size, FontStyle.Bold, GraphicsUnit.Point, 134))
             {
                 int widest = 0;
-                foreach (string name in StringPool.initPool)
+                foreach (string name in sample)
                 {
                     widest = Math.Max(widest, TextRenderer.MeasureText(name, probe).Width);
                 }

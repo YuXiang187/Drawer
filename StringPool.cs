@@ -7,30 +7,35 @@ namespace Drawer
     {
         private const double StddevScalingFactor = 3.0;
 
-        private readonly Random random;
+        // width estimates measure this many names instead of the whole list
+        internal const int SampleCount = 64;
 
-        public static List<string> initPool = new List<string>();
+        private readonly Random random = new Random();
 
-        public static List<string> pool = new List<string>();
-
-        public StringPool()
+        // draws one name from the active group using the gaussian model
+        public string Draw()
         {
-            random = new Random();
-
-            // the static pools always mirror the active group
             string id = GroupStore.GetActiveGroupId();
-            SetState(GroupStore.GetInit(id), GroupStore.GetPool(id));
+            List<string> pool = GroupStore.GetPoolForUpdate(id);
+            if (pool.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            // move the drawn name to the end by index instead of searching for its value
+            int index = PickIndex(pool);
+            return GroupStore.MoveDrawnToEnd(id, index);
         }
 
-        public static void SetState(List<string> init, List<string> history)
-        {
-            initPool = new List<string>(init);
-            pool = new List<string>(history);
-            SyncPool();
-        }
-
+        // used by the rolling animation
         public string Get()
         {
+            string id = GroupStore.GetActiveGroupId();
+            List<string> pool = GroupStore.GetPoolReference(id);
+            if (pool.Count == 0)
+            {
+                pool = GroupStore.GetPoolForUpdate(id);
+            }
             if (pool.Count == 0)
             {
                 return string.Empty;
@@ -38,16 +43,27 @@ namespace Drawer
             return pool[random.Next(pool.Count)];
         }
 
-        public string Draw()
+        // up to maxNames entries spread evenly over the active pool, for size estimates
+        public List<string> Sample(int maxNames)
         {
-            if (initPool.Count == 0)
+            string id = GroupStore.GetActiveGroupId();
+            List<string> pool = GroupStore.GetPoolReference(id);
+            if (pool.Count == 0)
             {
-                return string.Empty;
+                pool = GroupStore.GetInitReference(id);
             }
 
-            SyncPool();
+            int count = Math.Min(pool.Count, maxNames);
+            List<string> result = new List<string>(count);
+            for (int i = 0; i < count; i++)
+            {
+                result.Add(pool[(int)((long)i * pool.Count / count)]);
+            }
+            return result;
+        }
 
-            int index;
+        private int PickIndex(List<string> pool)
+        {
             while (true)
             {
                 double stddev = pool.Count / StddevScalingFactor;
@@ -55,74 +71,9 @@ namespace Drawer
 
                 if (sample < pool.Count)
                 {
-                    index = (int)sample;
-                    break;
+                    return (int)sample;
                 }
             }
-
-            string value = pool[index];
-
-            int first = pool.IndexOf(value);
-            pool.RemoveAt(first);
-            pool.Add(value);
-
-            return value;
-        }
-
-        public void Reset()
-        {
-            pool = new List<string>(initPool);
-        }
-
-        public void Save()
-        {
-            GroupStore.SetPool(GroupStore.GetActiveGroupId(), pool);
-        }
-
-        private static void SyncPool()
-        {
-            pool = BuildSyncedPool(initPool, pool);
-        }
-
-        // keeps the draw history order of the names that are still listed, appends new names first
-        internal static List<string> BuildSyncedPool(List<string> init, List<string> history)
-        {
-            Dictionary<string, int> required = new Dictionary<string, int>();
-            foreach (string name in init)
-            {
-                required[name] = required.TryGetValue(name, out int count) ? count + 1 : 1;
-            }
-
-            List<string> keptHistory = new List<string>();
-            Dictionary<string, int> kept = new Dictionary<string, int>();
-            foreach (string name in history)
-            {
-                int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
-                int requiredCount = required.TryGetValue(name, out int r) ? r : 0;
-                if (keptCount < requiredCount)
-                {
-                    keptHistory.Add(name);
-                    kept[name] = keptCount + 1;
-                }
-            }
-
-            List<string> fresh = new List<string>();
-            Dictionary<string, int> added = new Dictionary<string, int>();
-            foreach (string name in init)
-            {
-                int keptCount = kept.TryGetValue(name, out int k) ? k : 0;
-                int addedCount = added.TryGetValue(name, out int a) ? a : 0;
-                int requiredCount = required.TryGetValue(name, out int r) ? r : 0;
-                if (keptCount + addedCount < requiredCount)
-                {
-                    fresh.Add(name);
-                    added[name] = addedCount + 1;
-                }
-            }
-
-            List<string> merged = new List<string>(fresh);
-            merged.AddRange(keptHistory);
-            return merged;
         }
 
         private double NextGaussian(double mean, double stddev)

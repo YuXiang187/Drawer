@@ -51,6 +51,12 @@ namespace Drawer
             }
             inputTextBox.KeyDown += InputTextBox_KeyDown;
 
+            inputForm.Shown += (sender, e) =>
+            {
+                inputTextBox.Focus();
+                inputTextBox.TextBox.SelectionStart = inputTextBox.Text.Length;
+            };
+
             ToolStripButton okButton = new ToolStripButton
             {
                 Image = Properties.Resources.apply

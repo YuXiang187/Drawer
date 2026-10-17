@@ -10,6 +10,8 @@ namespace Drawer
 {
     internal class MainTray
     {
+        private const int PreviewCount = 50;
+
         private static readonly Dictionary<string, string> DefaultConfig = new Dictionary<string, string>
         {
             { "Mode", "0" },
@@ -139,8 +141,18 @@ namespace Drawer
                         {
                             MessageBox.Show("检测到您正在使用初始密码。\n为确保列表内容不被恶意篡改，请及时使用“密码”功能更换密码。", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
-                        editForm = new EditForm();
-                        editForm.Show();
+                        try
+                        {
+                            editForm = new EditForm();
+                            editForm.Show();
+                        }
+                        catch (Exception ex)
+                        {
+                            // a huge list may fail to load, report it instead of falling into the global handler
+                            editForm?.Dispose();
+                            editForm = null;
+                            MessageBox.Show($"打开编辑窗口失败。\n{ex.Message}", "编辑", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                     else
                     {
@@ -182,9 +194,8 @@ namespace Drawer
             {
                 return;
             }
+            // the draw history is cached per group, so switching needs no reload
             GroupStore.SetActiveGroup(id);
-            // reload the pools so the next draw uses the newly selected group
-            new StringPool();
         }
 
         private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
@@ -294,11 +305,16 @@ namespace Drawer
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(GroupStore.GetActiveGroupId())}\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            List<string> names = GroupStore.GetInit(GroupStore.GetActiveGroupId());
+            // only the head of a big list is shown, otherwise the dialog would freeze
+            string shown = names.Count > PreviewCount ? string.Join(", ", names.Take(PreviewCount)) + " ..." : string.Join(", ", names);
+            MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(GroupStore.GetActiveGroupId())}\n\n抽取数量：{names.Count}\n\n抽取名单：{shown}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
         {
+            // write the pending draw history before the process goes away
+            GroupStore.FlushPools();
             notifyIcon.Visible = false;
             Application.Exit();
         }

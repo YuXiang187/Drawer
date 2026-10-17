@@ -8,34 +8,52 @@ namespace Drawer
 {
     internal class KeyValueStore
     {
-        private readonly string dataFile = Path.Combine(Application.StartupPath, "Drawer.config");
+        private static readonly string dataFile = Path.Combine(Application.StartupPath, "Drawer.config");
+
+        // the whole config is read once and kept in memory
+        private static readonly object sync = new object();
+        private static List<string> lines;
+
+        private static List<string> Lines()
+        {
+            if (lines == null)
+            {
+                try
+                {
+                    lines = File.Exists(dataFile) ? File.ReadAllLines(dataFile).ToList() : new List<string>();
+                }
+                catch (IOException)
+                {
+                    lines = new List<string>();
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    lines = new List<string>();
+                }
+            }
+            return lines;
+        }
 
         public void Add(string key, string value)
         {
-            try
+            lock (sync)
             {
-                File.AppendAllText(dataFile, $"{key}:{value}\n");
-            }
-            catch (IOException)
-            {
-                // config file unavailable (deleted, locked or read-only): degrade silently instead of crashing
-            }
-            catch (UnauthorizedAccessException)
-            {
+                Lines().Add($"{key}:{value}");
+                Save();
             }
         }
 
         public void Update(string key, string value)
         {
-            try
+            lock (sync)
             {
-                List<string> lines = File.Exists(dataFile) ? File.ReadAllLines(dataFile).ToList() : new List<string>();
+                List<string> all = Lines();
                 bool found = false;
-                for (int i = 0; i < lines.Count; i++)
+                for (int i = 0; i < all.Count; i++)
                 {
-                    if (MatchesKey(lines[i], key))
+                    if (MatchesKey(all[i], key))
                     {
-                        lines[i] = $"{key}:{value}";
+                        all[i] = $"{key}:{value}";
                         found = true;
                         break;
                     }
@@ -43,32 +61,47 @@ namespace Drawer
                 if (!found)
                 {
                     // append missing keys so an incomplete config can self-heal
-                    lines.Add($"{key}:{value}");
+                    all.Add($"{key}:{value}");
                 }
-                File.WriteAllLines(dataFile, lines);
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
+                Save();
             }
         }
 
         public void Delete(string key)
         {
+            lock (sync)
+            {
+                if (Lines().RemoveAll(line => MatchesKey(line, key)) > 0)
+                {
+                    Save();
+                }
+            }
+        }
+
+        public string Get(string key)
+        {
+            lock (sync)
+            {
+                foreach (string line in Lines())
+                {
+                    if (MatchesKey(line, key))
+                    {
+                        return line.Substring(key.Length + 1);
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static void Save()
+        {
             try
             {
-                if (!File.Exists(dataFile))
-                {
-                    return;
-                }
-                List<string> lines = File.ReadAllLines(dataFile).ToList();
-                lines.RemoveAll(line => MatchesKey(line, key));
                 File.WriteAllLines(dataFile, lines);
             }
             catch (IOException)
             {
+                // config file unavailable (deleted, locked or read-only): degrade silently instead of crashing
             }
             catch (UnauthorizedAccessException)
             {
@@ -83,28 +116,6 @@ namespace Drawer
             }
             int separatorIndex = line.IndexOf(':');
             return separatorIndex == key.Length;
-        }
-
-        public string Get(string key)
-        {
-            try
-            {
-                string[] lines = File.ReadAllLines(dataFile);
-                foreach (string line in lines)
-                {
-                    if (MatchesKey(line, key))
-                    {
-                        return line.Substring(key.Length + 1);
-                    }
-                }
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-            return null;
         }
     }
 }

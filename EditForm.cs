@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -34,11 +35,13 @@ namespace Drawer
         private readonly ToolStripButton groupDeleteButton;
 
         private static readonly string fontName = "微软雅黑";
+        private const int PreviewCount = 50;
         private static float dpiScale;
         private readonly KeyValueStore store;
         private readonly List<string> groupIds;
         private string currentGroupId;
-        private string loadedContent;
+        private string loadedContent = string.Empty;
+        private string pendingContent = string.Empty;
         private List<string> list;
         private int foundIndex = 0;
 
@@ -253,6 +256,9 @@ namespace Drawer
             }
 
             LoadGroup(GroupStore.GetActiveGroupId());
+
+            // a big list is filled in after the window is up, otherwise Show() keeps measuring the long text
+            Shown += (sender, e) => BeginInvoke(new Action(FillContent));
         }
 
         private void ListBox_DoubleClick(object sender, EventArgs e)
@@ -337,13 +343,26 @@ namespace Drawer
             AddItem();
         }
 
-        // ban whitespace when input text
         private void TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (char.IsWhiteSpace(e.KeyChar))
+            if (e.KeyChar == '\r' || e.KeyChar == '\n')
+            {
+                e.Handled = true;
+                return;
+            }
+            if (char.IsWhiteSpace(e.KeyChar) && TouchesComma())
             {
                 e.Handled = true;
             }
+        }
+
+        // whether the caret sits right before or right after a comma
+        private bool TouchesComma()
+        {
+            int start = textBox.SelectionStart;
+            int end = start + textBox.SelectionLength;
+            string text = textBox.Text;
+            return (start > 0 && text[start - 1] == ',') || (end < text.Length && text[end] == ',');
         }
 
         private void TextBox_TextChanged(object sender, EventArgs e)
@@ -356,15 +375,10 @@ namespace Drawer
             textBox.ScrollToCaret();
             totalStripStatusLabel.Text = $"总数：{listBox.Items.Count}";
 
-            // ban whitespace when paste
             if (textBox != null)
             {
                 string originalText = textBox.Text;
-                string newText = originalText
-                    .Replace(" ", "")
-                    .Replace("\t", "")
-                    .Replace("\n", ",")
-                    .Replace("\r", "");
+                string newText = NormalizeCommas(originalText);
 
                 if (originalText != newText)
                 {
@@ -372,6 +386,13 @@ namespace Drawer
                     textBox.SelectionStart = Math.Min(textBox.SelectionStart, textBox.Text.Length);
                 }
             }
+        }
+
+        // turns line breaks into commas and strips spaces next to a comma
+        internal static string NormalizeCommas(string text)
+        {
+            string normalized = text.Replace("\r\n", ",").Replace('\n', ',').Replace("\r", "");
+            return Regex.Replace(normalized, @"\s*,\s*", ",");
         }
 
         private void ImportStripButton_Click(object sender, EventArgs e)
@@ -385,8 +406,9 @@ namespace Drawer
             {
                 using (StreamReader reader = new StreamReader(openFileDialog.FileName))
                 {
-                    string text = reader.ReadLine();
-                    if (text != null)
+                    // the whole file is imported, line breaks are turned into commas later
+                    string text = reader.ReadToEnd().Trim();
+                    if (text.Length > 0)
                     {
                         textBox.Text = text;
                     }
@@ -528,10 +550,26 @@ namespace Drawer
                 groupId = GroupStore.AddGroup(GroupStore.DefaultGroupName);
             }
             currentGroupId = groupId;
-            loadedContent = string.Join(",", GroupStore.GetInit(groupId));
-            textBox.Text = loadedContent;
+            pendingContent = string.Join(",", GroupStore.GetInit(groupId));
+            if (Visible)
+            {
+                FillContent();
+            }
             Text = $"YuXiang Drawer - {GroupStore.GetGroupName(groupId)}";
             RefreshGroupComboBox();
+        }
+
+        private void FillContent()
+        {
+            if (IsDisposed || Disposing)
+            {
+                return;
+            }
+            if (textBox.Text != pendingContent)
+            {
+                textBox.Text = pendingContent;
+            }
+            loadedContent = textBox.Text;
         }
 
         private void RefreshGroupComboBox()
@@ -692,11 +730,13 @@ namespace Drawer
         {
             if (textBox.Text.Length > 0)
             {
-                list.RemoveAll(s => string.IsNullOrEmpty(s));
+                // spaces at the very start or end of an entry are dropped as well
+                list = list.Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
                 GroupStore.SetInit(currentGroupId, list);
                 GroupStore.SetActiveGroup(currentGroupId);
-                new StringPool();
-                MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(currentGroupId)}\n\n抽取数量：{StringPool.initPool.Count()}\n\n抽取名单：{string.Join(", ", StringPool.initPool)}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // only the head of a big list is shown, otherwise the dialog would freeze
+                string shown = list.Count > PreviewCount ? string.Join(", ", list.Take(PreviewCount)) + " ..." : string.Join(", ", list);
+                MessageBox.Show($"统计结果如下。\n\n抽取分组：{GroupStore.GetGroupName(currentGroupId)}\n\n抽取数量：{list.Count}\n\n抽取名单：{shown}", "统计", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Dispose();
             }
             else
