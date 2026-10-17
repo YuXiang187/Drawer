@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -6,31 +5,24 @@ namespace Drawer
     internal class PromptDialog
     {
         private static Form inputForm;
-        private readonly Form form;
+        private readonly DpiAwareForm form;
         private readonly ToolStripTextBox inputTextBox;
         private Keys hotkey;
         private string text;
 
         private PromptDialog(string title, string prompt, int width, int boxWidth)
         {
-            form = new Form();
+            form = new DpiAwareForm();
             inputForm = form;
-            float dpiScale = Ui.DpiScale(form);
 
             form.Text = title;
-            form.Width = (int)(width * dpiScale);
-            form.Height = (int)(72 * dpiScale);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
-            form.AutoScaleMode = AutoScaleMode.Dpi;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.ShowInTaskbar = false;
             form.MinimizeBox = false;
             form.MaximizeBox = false;
 
-            ToolStrip toolStrip = new ToolStrip
-            {
-                ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale))
-            };
+            ToolStrip toolStrip = new ToolStrip();
 
             ToolStripLabel promptLabel = new ToolStripLabel(prompt)
             {
@@ -39,7 +31,6 @@ namespace Drawer
 
             inputTextBox = new ToolStripTextBox
             {
-                Width = (int)(boxWidth * dpiScale),
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = Ui.CreateFont(12F)
             };
@@ -63,6 +54,14 @@ namespace Drawer
             toolStrip.Items.Add(cancelButton);
 
             form.Controls.Add(toolStrip);
+
+            form.LayoutRequested += (sender, e) =>
+            {
+                form.Width = Ui.Px(form, width);
+                form.Height = Ui.Px(form, 72);
+                toolStrip.ImageScalingSize = Ui.Px(form, 20, 20);
+                inputTextBox.Width = Ui.Px(form, boxWidth);
+            };
         }
 
         public static string Input(string title, string prompt, bool isPassword, string initialText = null, int maxLength = 0)

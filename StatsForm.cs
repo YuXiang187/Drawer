@@ -19,16 +19,12 @@ namespace Drawer
                 return;
             }
 
-            using (Form form = new Form())
+            using (DpiAwareForm form = new DpiAwareForm())
             {
                 current = form;
-                float dpiScale = Ui.DpiScale(form);
 
                 form.Text = "统计";
                 form.Icon = Properties.Resources.tray_run;
-                form.ClientSize = new Size((int)(430 * dpiScale), (int)(400 * dpiScale));
-                form.MinimumSize = new Size((int)(330 * dpiScale), (int)(240 * dpiScale));
-                form.AutoScaleMode = AutoScaleMode.Dpi;
                 form.StartPosition = FormStartPosition.CenterScreen;
                 form.ShowInTaskbar = false;
                 form.MinimizeBox = false;
@@ -45,29 +41,37 @@ namespace Drawer
                     Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                     BackColor = Color.White,
                     Font = Ui.CreateFont(10F),
-                    Location = new Point((int)(14 * dpiScale), (int)(12 * dpiScale)),
                     Multiline = true,
                     ReadOnly = true,
                     ScrollBars = ScrollBars.Vertical,
-                    Size = new Size((int)(402 * dpiScale), (int)(332 * dpiScale)),
                     WordWrap = true
                 };
-
-                form.Controls.Add(namesTextBox);
-                // create the handle first, so the wrap layout runs once at the final width instead of twice
-                _ = namesTextBox.Handle;
-                namesTextBox.Text = content;
 
                 Button closeButton = new Button
                 {
                     Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                     DialogResult = DialogResult.OK,
-                    Location = new Point((int)(328 * dpiScale), (int)(356 * dpiScale)),
-                    Size = new Size((int)(88 * dpiScale), (int)(30 * dpiScale)),
                     Text = "关闭"
                 };
 
+                form.Controls.Add(namesTextBox);
                 form.Controls.Add(closeButton);
+
+                form.LayoutRequested += (sender, e) =>
+                {
+                    form.MinimumSize = Size.Empty;
+                    form.ClientSize = Ui.Px(form, 430, 400);
+                    form.MinimumSize = Ui.Px(form, 330, 240);
+                    namesTextBox.Location = new Point(Ui.Px(form, 14), Ui.Px(form, 12));
+                    namesTextBox.Size = Ui.Px(form, 402, 332);
+                    closeButton.Location = new Point(Ui.Px(form, 328), Ui.Px(form, 356));
+                    closeButton.Size = Ui.Px(form, 88, 30);
+                };
+
+                // create the handle first, so the wrap layout runs once at the final width instead of twice
+                _ = namesTextBox.Handle;
+                namesTextBox.Text = content;
+
                 form.AcceptButton = closeButton;
                 form.CancelButton = closeButton;
                 form.Shown += (sender, e) =>

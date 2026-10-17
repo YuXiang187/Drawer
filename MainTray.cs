@@ -272,11 +272,7 @@ namespace Drawer
             floatFormItem.Enabled = false;
             pauseItem.Enabled = true;
             mainForm.DisableHotkey();
-            Screen screen = Ui.PrimaryScreen();
-            if (screen != null)
-            {
-                floatForm.Location = new Point(screen.WorkingArea.Right - floatForm.Width - 22, screen.WorkingArea.Bottom - floatForm.Height - 16);
-            }
+            floatForm.MoveToCorner();
             floatForm.ShowOrActivate();
             store.Update("Mode", "1");
         }

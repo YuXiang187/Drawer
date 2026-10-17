@@ -4,15 +4,15 @@ using System.Windows.Forms;
 
 namespace Drawer
 {
-    internal class FloatForm : Form
+    internal class FloatForm : DpiAwareForm
     {
         private bool isDragging = false;
+        private bool docked = true;
         private readonly MainTray mainTray;
         private readonly ContextMenuStrip contextMenu;
 
         public FloatForm(MainTray mainTray)
         {
-            float dpiScale = Ui.DpiScale(this);
             this.mainTray = mainTray;
 
             Text = "Drawer";
@@ -26,14 +26,7 @@ namespace Drawer
             MouseMove += FloatForm_MouseMove;
             MouseUp += FloatForm_MouseUp;
             MouseClick += FloatForm_MouseClick;
-            Size = new Size((int)(38 * dpiScale), (int)(38 * dpiScale));
-            AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
-            Screen screen = Ui.PrimaryScreen();
-            if (screen != null)
-            {
-                Location = new Point(screen.WorkingArea.Right - Width - (int)(28 * dpiScale), screen.WorkingArea.Bottom - Height - (int)(16 * dpiScale));
-            }
             ResumeLayout(false);
 
             // MouseMenu
@@ -44,6 +37,28 @@ namespace Drawer
             contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add(moveItem);
             contextMenu.Items.Add(closeItem);
+        }
+
+        protected override void LayoutForDpi()
+        {
+            Size = Ui.Px(this, 38, 38);
+            if (docked)
+            {
+                MoveToCorner();
+            }
+        }
+
+        internal void MoveToCorner()
+        {
+            docked = true;
+            Screen screen = Ui.PrimaryScreen();
+            if (screen == null)
+            {
+                return;
+            }
+            Size size = Ui.Px(this, 38, 38);
+            Rectangle area = screen.WorkingArea;
+            Location = new Point(area.Right - size.Width - Ui.Px(this, 28), area.Bottom - size.Height - Ui.Px(this, 16));
         }
 
         // an already visible float window is pulled to the front instead of being shown again
@@ -126,6 +141,7 @@ namespace Drawer
         {
             if (isDragging)
             {
+                docked = false;
                 Point newLocation = PointToScreen(new Point(e.X, e.Y));
                 newLocation.Offset(-Size.Width / 2, -Size.Height / 2);
                 Location = newLocation;

@@ -89,6 +89,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="EncryptString.cs" />
+    <Compile Include="DpiAwareForm.cs" />
     <Compile Include="FloatForm.cs">
       <SubType>Form</SubType>
     </Compile>

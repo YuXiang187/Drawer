@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Drawer
 {
-    internal class EditForm : Form
+    internal class EditForm : DpiAwareForm
     {
         private readonly StatusStrip statusStrip;
         private readonly ToolStripStatusLabel totalStripStatusLabel;
@@ -41,10 +41,10 @@ namespace Drawer
         private string pendingContent = string.Empty;
         private List<string> list;
         private int foundIndex = 0;
+        private bool centered;
 
         public EditForm()
         {
-            float dpiScale = Ui.DpiScale(this);
             store = new KeyValueStore();
             groupIds = new List<string>();
             list = new List<string>();
@@ -99,7 +99,6 @@ namespace Drawer
             exportStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             exportStripButton.Click += ExportStripButton_Click;
 
-            searchStripTextBox.Width = (int)(120 * dpiScale);
             searchStripTextBox.BorderStyle = BorderStyle.FixedSingle;
             searchStripTextBox.Font = Ui.CreateFont(12F);
 
@@ -133,7 +132,6 @@ namespace Drawer
             applyStripButton.TextImageRelation = TextImageRelation.ImageAboveText;
             applyStripButton.Click += ApplyStripButton_Click;
 
-            toolStrip.ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale));
             toolStrip.Items.AddRange(new ToolStripItem[] {
             importStripButton,
             exportStripButton,
@@ -149,7 +147,6 @@ namespace Drawer
             applyStripButton});
 
             groupComboBox.AutoSize = false;
-            groupComboBox.Width = (int)(200 * dpiScale);
             groupComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             groupComboBox.Font = Ui.CreateFont(12F);
             groupComboBox.ComboBox.SelectionChangeCommitted += GroupComboBox_SelectionChangeCommitted;
@@ -175,7 +172,6 @@ namespace Drawer
                 TextImageRelation = TextImageRelation.ImageAboveText
             };
 
-            groupToolStrip.ImageScalingSize = new Size((int)(20 * dpiScale), (int)(20 * dpiScale));
             groupToolStrip.Items.AddRange(new ToolStripItem[] {
             groupStripLabel,
             groupComboBox,
@@ -186,49 +182,37 @@ namespace Drawer
             listBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listBox.BorderStyle = BorderStyle.FixedSingle;
             listBox.Font = Ui.CreateFont(12F);
-            listBox.ItemHeight = 27;
-            listBox.Location = new Point((int)(12 * dpiScale), (int)(91 * dpiScale));
             listBox.ScrollAlwaysVisible = true;
             listBox.SelectionMode = SelectionMode.MultiExtended;
-            listBox.Size = new Size((int)(236 * dpiScale), (int)(353 * dpiScale));
             listBox.SelectedIndexChanged += ListBox_SelectedIndexChanged;
             listBox.DoubleClick += ListBox_DoubleClick;
 
             textBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBox.BorderStyle = BorderStyle.FixedSingle;
             textBox.Font = Ui.CreateFont(12F);
-            textBox.Location = new Point((int)(254 * dpiScale), (int)(91 * dpiScale));
             textBox.Multiline = true;
             textBox.ScrollBars = ScrollBars.Vertical;
-            textBox.Size = new Size((int)(516 * dpiScale), (int)(314 * dpiScale));
             textBox.TextChanged += TextBox_TextChanged;
             textBox.KeyPress += TextBox_KeyPress;
 
             addTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             addTextBox.BorderStyle = BorderStyle.FixedSingle;
             addTextBox.Font = Ui.CreateFont(12F);
-            addTextBox.Location = new Point((int)(254 * dpiScale), (int)(413 * dpiScale));
-            addTextBox.Size = new Size((int)(436 * dpiScale), (int)(34 * dpiScale));
             addTextBox.KeyDown += AddTextBox_KeyDown;
 
             addButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             addButton.BackgroundImage = Properties.Resources.add;
             addButton.BackgroundImageLayout = ImageLayout.Zoom;
-            addButton.Location = new Point((int)(696 * dpiScale), (int)(411 * dpiScale));
-            addButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             addButton.UseVisualStyleBackColor = true;
             addButton.Click += AddButton_Click;
 
             removeButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             removeButton.BackgroundImage = Properties.Resources.remove;
             removeButton.BackgroundImageLayout = ImageLayout.Zoom;
-            removeButton.Location = new Point((int)(736 * dpiScale), (int)(411 * dpiScale));
-            removeButton.Size = new Size((int)(34 * dpiScale), (int)(34 * dpiScale));
             removeButton.UseVisualStyleBackColor = true;
             removeButton.Click += RemoveButton_Click;
 
             Text = "YuXiang Drawer";
-            ClientSize = new Size((int)(782 * dpiScale), (int)(474 * dpiScale));
             Controls.Add(statusStrip);
             Controls.Add(groupToolStrip);
             Controls.Add(toolStrip);
@@ -238,18 +222,57 @@ namespace Drawer
             Controls.Add(listBox);
             Controls.Add(addTextBox);
             Icon = Properties.Resources.tray_run;
-            MinimumSize = new Size((int)(600 * dpiScale), (int)(441 * dpiScale));
-            AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
             FormClosing += EditForm_FormClosing;
             ResumeLayout(false);
-
-            Ui.CenterOnPrimary(this);
 
             LoadGroup(GroupStore.GetActiveGroupId());
 
             // a big list is filled in after the window is up, otherwise Show() keeps measuring the long text
             Shown += (sender, e) => BeginInvoke(new Action(FillContent));
+        }
+
+        protected override void LayoutForDpi()
+        {
+            if (listBox == null)
+            {
+                return;
+            }
+
+            toolStrip.ImageScalingSize = Ui.Px(this, 20, 20);
+            groupToolStrip.ImageScalingSize = Ui.Px(this, 20, 20);
+            searchStripTextBox.Width = Ui.Px(this, 120);
+            groupComboBox.Width = Ui.Px(this, 200);
+
+            MinimumSize = Size.Empty;
+            ClientSize = Ui.Px(this, 782, 474);
+            MinimumSize = Ui.Px(this, 600, 441);
+
+            listBox.ItemHeight = Ui.Px(this, 27);
+            listBox.Location = new Point(Ui.Px(this, 12), Ui.Px(this, 91));
+            listBox.Size = Ui.Px(this, 236, 353);
+
+            textBox.Location = new Point(Ui.Px(this, 254), Ui.Px(this, 91));
+            textBox.Size = Ui.Px(this, 516, 314);
+
+            addTextBox.Location = new Point(Ui.Px(this, 254), Ui.Px(this, 413));
+            addTextBox.Size = Ui.Px(this, 436, 34);
+
+            addButton.Location = new Point(Ui.Px(this, 696), Ui.Px(this, 411));
+            addButton.Size = Ui.Px(this, 34, 34);
+
+            removeButton.Location = new Point(Ui.Px(this, 736), Ui.Px(this, 411));
+            removeButton.Size = Ui.Px(this, 34, 34);
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if (!centered)
+            {
+                centered = true;
+                Ui.CenterOnPrimary(this);
+            }
         }
 
         private void ListBox_DoubleClick(object sender, EventArgs e)

@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace Drawer
 {
-    internal class MainForm : Form
+    internal class MainForm : DpiAwareForm
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -21,7 +21,7 @@ namespace Drawer
         private const int BaseWidth = 450;
         private const float FontSize = 60F;
         private const float MinFontSize = 10F;
-        private readonly float dpiScale;
+        private bool centered;
 
         private readonly StringPool pool;
         private readonly MainTray mainTray;
@@ -30,7 +30,6 @@ namespace Drawer
 
         public MainForm(MainTray mainTray)
         {
-            dpiScale = Ui.DpiScale(this);
             this.mainTray = mainTray;
             pool = new StringPool();
 
@@ -38,18 +37,14 @@ namespace Drawer
             Task.Run(() => GroupStore.Preload(GroupStore.GetActiveGroupId()));
 
             Text = "YuXiang Drawer";
-            ClientSize = new Size((int)(BaseWidth * dpiScale), (int)(250 * dpiScale));
             TopMost = true;
             ControlBox = false;
             FormBorderStyle = FormBorderStyle.None;
-            AutoScaleMode = AutoScaleMode.Dpi;
             StartPosition = FormStartPosition.Manual;
             ShowInTaskbar = false;
             Paint += MainForm_Paint;
             FormClosing += MainForm_FormClosing;
             ResumeLayout(false);
-
-            Ui.CenterOnPrimary(this);
 
             mainLabel = new Label
             {
@@ -57,8 +52,6 @@ namespace Drawer
                 BackColor = Color.Transparent,
                 ForeColor = Color.Black,
                 Font = Ui.CreateFont(FontSize, FontStyle.Bold),
-                Location = new Point((int)(12 * dpiScale), (int)(49 * dpiScale)),
-                Size = new Size((int)(426 * dpiScale), (int)(153 * dpiScale)),
                 Text = "LABEL",
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -66,13 +59,42 @@ namespace Drawer
             progressBar = new ProgressBar
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Location = new Point((int)(12 * dpiScale), (int)(228 * dpiScale)),
-                Size = new Size((int)(426 * dpiScale), (int)(10 * dpiScale)),
                 Value = 0,
             };
 
             Controls.Add(mainLabel);
             Controls.Add(progressBar);
+        }
+
+        protected override void LayoutForDpi()
+        {
+            if (mainLabel == null || progressBar == null)
+            {
+                return;
+            }
+
+            int padding = MarginX * 2;
+            ClientSize = Ui.Px(this, BaseWidth, 250);
+            mainLabel.Location = new Point(Ui.Px(this, MarginX), Ui.Px(this, 49));
+            mainLabel.Size = Ui.Px(this, BaseWidth - padding, 153);
+            progressBar.Location = new Point(Ui.Px(this, MarginX), Ui.Px(this, 228));
+            progressBar.Size = Ui.Px(this, BaseWidth - padding, 10);
+
+            if (Visible && isRun == false)
+            {
+                FitToNames();
+            }
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            FitToNames();
+            if (!centered)
+            {
+                centered = true;
+                Ui.CenterOnPrimary(this);
+            }
         }
 
         public void EnableHotKey(Keys currentHotkey)
@@ -131,6 +153,7 @@ namespace Drawer
         {
             if (isRun == false)
             {
+                _ = Handle;
                 FitToNames();
                 Show();
                 isRun = true;
@@ -181,8 +204,8 @@ namespace Drawer
         private void FitToNames(List<string> names)
         {
             Screen screen = Ui.PrimaryScreen();
-            int margin = (int)(MarginX * dpiScale);
-            int limit = screen != null ? screen.WorkingArea.Width - margin * 2 : (int)(426 * dpiScale);
+            int margin = Ui.Px(this, MarginX);
+            int limit = screen != null ? screen.WorkingArea.Width - margin * 2 : Ui.Px(this, 426);
 
             float size = FontSize;
             int required = WidestName(names, size);
@@ -198,7 +221,7 @@ namespace Drawer
             }
 
             int centerX = Location.X + ClientSize.Width / 2;
-            int width = Math.Max((int)(BaseWidth * dpiScale), required + margin * 2);
+            int width = Math.Max(Ui.Px(this, BaseWidth), required + margin * 2);
             ClientSize = new Size(screen != null ? Math.Min(width, screen.WorkingArea.Width) : width, ClientSize.Height);
             Location = new Point(centerX - ClientSize.Width / 2, Location.Y);
         }
