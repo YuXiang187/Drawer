@@ -99,6 +99,12 @@ namespace Drawer
             }
         }
 
+        protected override void OnClientSizeChanged(EventArgs e)
+        {
+            base.OnClientSizeChanged(e);
+            Invalidate();
+        }
+
         public void EnableHotKey(Keys currentHotkey)
         {
             if (currentHotkey != Keys.None)
@@ -156,7 +162,8 @@ namespace Drawer
             if (isRun == false)
             {
                 _ = Handle;
-                FitToNames();
+                string drawn = pool.Draw();
+                FitToNames(drawn);
                 Show();
                 isRun = true;
                 progressBar.Value = 100;
@@ -165,12 +172,7 @@ namespace Drawer
                 mainTray.FloatFormIcon(false);
                 for (int i = 0; i < 8 && !IsDisposed; i++)
                 {
-                    mainLabel.Text = i == 7 ? pool.Draw() : pool.Get();
-                    // the drawn name stays on screen, so widen for it when the sample did not cover it
-                    if (i == 7)
-                    {
-                        FitDrawn(mainLabel.Text);
-                    }
+                    mainLabel.Text = i == 7 ? drawn : pool.Get();
                     await Task.Delay(60);
                 }
                 if (IsDisposed)
@@ -192,14 +194,14 @@ namespace Drawer
             FitToNames(pool.Sample(StringPool.SampleCount));
         }
 
-        // widens the form only when the drawn name does not fit, so a short name does not shrink the window
-        private void FitDrawn(string name)
+        private void FitToNames(string drawn)
         {
-            if (mainLabel.Width >= TextRenderer.MeasureText(name, mainLabel.Font).Width)
+            List<string> names = pool.Sample(StringPool.SampleCount);
+            if (!string.IsNullOrEmpty(drawn))
             {
-                return;
+                names.Add(drawn);
             }
-            FitToNames(new List<string> { name });
+            FitToNames(names);
         }
 
         // form width adapt the given names, a big list is estimated from a sample instead of measuring every entry
