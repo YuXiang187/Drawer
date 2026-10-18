@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Drawer
@@ -388,47 +387,25 @@ namespace Drawer
             {
                 e.Handled = true;
                 textBox.SelectedText = ",";
-                return;
             }
-            if (char.IsWhiteSpace(e.KeyChar) && TouchesComma())
-            {
-                e.Handled = true;
-            }
-        }
-
-        // whether the caret sits right before or right after a comma
-        private bool TouchesComma()
-        {
-            int start = textBox.SelectionStart;
-            int end = start + textBox.SelectionLength;
-            string text = textBox.Text;
-            return (start > 0 && text[start - 1] == ',') || (end < text.Length && text[end] == ',');
         }
 
         private void TextBox_TextChanged(object sender, EventArgs e)
         {
-            list = textBox.Text.Length == 0 ? new List<string>() : new List<string>(textBox.Text.Split(','));
+            list = SplitNames(textBox.Text);
             listBox.DataSource = list;
             listBox.ClearSelected();
             listBox.SelectedIndex = listBox.Items.Count - 1;
             textBox.ScrollToCaret();
             totalStripStatusLabel.Text = $"总数：{listBox.Items.Count}";
-
-            string originalText = textBox.Text;
-            string newText = NormalizeCommas(originalText);
-
-            if (originalText != newText)
-            {
-                textBox.Text = newText;
-                textBox.SelectionStart = Math.Min(textBox.SelectionStart, textBox.Text.Length);
-            }
         }
 
-        // turns line breaks into commas and strips spaces next to a comma
-        internal static string NormalizeCommas(string text)
+        private static List<string> SplitNames(string text)
         {
-            string normalized = text.Replace("\r\n", ",").Replace('\n', ',').Replace("\r", "");
-            return Regex.Replace(normalized, @"\s*,\s*", ",");
+            return text.Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .Where(s => s.Length > 0)
+                .ToList();
         }
 
         private void ImportStripButton_Click(object sender, EventArgs e)
@@ -442,7 +419,6 @@ namespace Drawer
             {
                 using (StreamReader reader = new StreamReader(openFileDialog.FileName))
                 {
-                    // the whole file is imported, line breaks are turned into commas later
                     string text = reader.ReadToEnd().Trim();
                     if (text.Length > 0)
                     {
@@ -756,10 +732,9 @@ namespace Drawer
 
         private void ApplyStripButton_Click(object sender, EventArgs e)
         {
-            if (textBox.Text.Length > 0)
+            list = SplitNames(textBox.Text);
+            if (list.Count > 0)
             {
-                // spaces at the very start or end of an entry are dropped as well
-                list = list.Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
                 GroupStore.SetInit(currentGroupId, list);
                 GroupStore.SetActiveGroup(currentGroupId);
                 StatsForm.Show(GroupStore.GetGroupName(currentGroupId), list);
