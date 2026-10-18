@@ -311,12 +311,15 @@ namespace Drawer
 
         private void CountItem_Click(object sender, EventArgs e)
         {
-            // the tray menu is still closing here, a window opened now can be dropped, so post it one message later
-            mainForm.BeginInvoke(new Action(() =>
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 10 };
+            timer.Tick += (tickSender, tickArgs) =>
             {
+                timer.Stop();
+                timer.Dispose();
                 string id = GroupStore.GetActiveGroupId();
                 StatsForm.Show(GroupStore.GetGroupName(id), GroupStore.GetInitReference(id));
-            }));
+            };
+            timer.Start();
         }
 
         private void ExitItem_Click(object sender, EventArgs e)

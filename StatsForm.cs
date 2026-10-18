@@ -62,7 +62,7 @@ namespace Drawer
                     form.ClientSize = Ui.Px(form, 430, 400);
                     form.MinimumSize = Ui.Px(form, 330, 240);
                     namesTextBox.Font = Ui.CreateFont(form, 10F);
-                    closeButton.Font = Ui.CreateFont(form, 12F);
+                    closeButton.Font = Ui.CreateFont(form, 9F);
                     namesTextBox.Location = new Point(Ui.Px(form, 14), Ui.Px(form, 12));
                     namesTextBox.Size = Ui.Px(form, 402, 332);
                     closeButton.Location = new Point(Ui.Px(form, 328), Ui.Px(form, 356));
